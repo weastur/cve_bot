@@ -2,7 +2,6 @@
 
 set -ex
 
-dikort
 black --check cve_bot
 isort -c cve_bot
 flake8 cve_bot
