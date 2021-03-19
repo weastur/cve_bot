@@ -1,2 +1,1 @@
-wheel==0.36.2
-pelican[markdown]==4.5.4
+python-telegram-bot==13.4.1
