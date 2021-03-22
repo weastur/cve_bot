@@ -1,1 +1,2 @@
 python-telegram-bot==13.4.1
+logzio-python-handler==3.0.0
