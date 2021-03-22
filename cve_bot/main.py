@@ -2,6 +2,7 @@ import logging
 import logging.config  # noqa: WPS301 WPS458
 import os
 
+import sentry_sdk
 from telegram import Update
 from telegram.ext import (
     CallbackContext,
@@ -46,6 +47,10 @@ def configure_logging(logzio_token=None, loglevel="INFO"):
 
 configure_logging(os.environ.get("CVE_BOT_LOGZIO_TOKEN"), os.environ.get("CVE_BOT_LOG_LEVEL", "INFO"))
 logger = logging.getLogger(__name__)
+
+sentry_url = os.environ.get("CVE_BOT_SENTRY_URL")
+if sentry_url:
+    sentry_sdk.init(sentry_url, traces_sample_rate=1.0)
 
 
 def start(update: Update, _: CallbackContext) -> None:
