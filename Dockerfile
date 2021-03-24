@@ -5,9 +5,12 @@ RUN apk add --no-cache \
         gcc \
         g++ \
         musl-dev \
-    && pip3 install cve_bot==0.0.2 \
+    && pip3 install cve-bot==0.0.5 \
     && mkdir /cve_bot
 
 COPY ./docker-entrypoint.sh /
+WORKDIR /cve_bot
+
+ENV CVE_BOT_DB_PATH=/cve_bot/main.db
 
 ENTRYPOINT ["/docker-entrypoint.sh"]

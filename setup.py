@@ -61,5 +61,7 @@ setup(
             "{0} = {0}.main:main".format(module_name),
         ]
     },
-    include_package_data=True,
+    package_data={
+        "cve_bot": ["alembic.ini", "migrations/versions/*.py"],
+    },
 )
