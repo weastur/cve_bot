@@ -10,7 +10,4 @@ RUN apk add --no-cache \
 
 COPY ./docker-entrypoint.sh /
 
-WORKDIR /cve_bot
-VOLUME /cve_bot
-
 ENTRYPOINT ["/docker-entrypoint.sh"]
