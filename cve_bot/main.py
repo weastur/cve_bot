@@ -1,17 +1,10 @@
-import logging
 import logging.config  # noqa: WPS301 WPS458
 
 import sentry_sdk
-from telegram import Update
-from telegram.ext import (
-    CallbackContext,
-    CommandHandler,
-    Filters,
-    MessageHandler,
-    Updater,
-)
+from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
 
 from cve_bot.config import get_config
+from cve_bot.handlers import echo, help_command, start
 
 config = get_config()
 
@@ -49,18 +42,6 @@ if config["sentry_url"]:
     sentry_sdk.init(config["sentry_url"], traces_sample_rate=1.0)
 
 logger = logging.getLogger(__name__)
-
-
-def start(update: Update, _: CallbackContext) -> None:
-    update.message.reply_text("Hi!")
-
-
-def help_command(update: Update, _: CallbackContext) -> None:
-    update.message.reply_text("Help!")
-
-
-def echo(update: Update, _: CallbackContext) -> None:
-    update.message.reply_text(update.message.text)
 
 
 def main() -> None:
