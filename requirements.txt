@@ -3,3 +3,4 @@ logzio-python-handler==3.0.0
 sentry_sdk==1.0.0
 alembic==1.5.8
 SQLAlchemy==1.4.2
+apscheduler==3.6.3

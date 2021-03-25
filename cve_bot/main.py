@@ -1,10 +1,13 @@
 import logging.config  # noqa: WPS301 WPS458
 
 import sentry_sdk
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
 
 from cve_bot.config import get_config
 from cve_bot.handlers import echo, help_command, start
+from cve_bot.updaters import debian_update
 
 config = get_config()
 
@@ -45,6 +48,17 @@ logger = logging.getLogger(__name__)
 
 
 def main() -> None:
+    scheduler = BackgroundScheduler(
+        {
+            "apscheduler.executors.default": {
+                "class": "apscheduler.executors.pool:ThreadPoolExecutor",
+                "max_workers": "1",
+            },
+        }
+    )
+    scheduler.add_job(debian_update, CronTrigger.from_crontab(config["update_cron"]))
+    scheduler.start()
+
     updater = Updater(config["token"])
 
     dispatcher = updater.dispatcher
