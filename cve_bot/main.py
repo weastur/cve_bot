@@ -1,6 +1,5 @@
 import logging
 import logging.config  # noqa: WPS301 WPS458
-import os
 
 import sentry_sdk
 from telegram import Update
@@ -12,45 +11,44 @@ from telegram.ext import (
     Updater,
 )
 
+from cve_bot.config import get_config
 
-def configure_logging(logzio_token=None, loglevel="INFO"):
-    config = {
-        "version": 1,
-        "disable_existing_loggers": False,
-        "formatters": {
-            "consoleFormatter": {
-                "format": "%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s",
-            }
-        },
-        "handlers": {
-            "console": {
-                "class": "logging.StreamHandler",
-                "level": loglevel,
-                "formatter": "consoleFormatter",
-            }
-        },
-        "loggers": {"": {"level": "DEBUG", "handlers": ["console"], "propagate": True}},
-    }
-    if logzio_token is not None:
-        config["formatters"]["logzioFormat"] = {"format": '{"additional_field": "value"}', "validate": False}
-        config["handlers"]["logzio"] = {
-            "class": "logzio.handler.LogzioHandler",
-            "level": loglevel,
-            "formatter": "logzioFormat",
-            "token": logzio_token,
-            "logs_drain_timeout": 5,
-            "url": "https://listener-uk.logz.io:8071",
+config = get_config()
+
+LOGGING_CONFIG = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "consoleFormatter": {
+            "format": "%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s",
         }
-        config["loggers"][""]["handlers"].append("logzio")
-    logging.config.dictConfig(config)
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": config["log_level"],
+            "formatter": "consoleFormatter",
+        }
+    },
+    "loggers": {"": {"level": "DEBUG", "handlers": ["console"], "propagate": True}},
+}
+if config["logzio_token"] is not None:
+    LOGGING_CONFIG["formatters"]["logzioFormat"] = {"format": '{"additional_field": "value"}', "validate": False}
+    LOGGING_CONFIG["handlers"]["logzio"] = {
+        "class": "logzio.handler.LogzioHandler",
+        "level": config["log_level"],
+        "formatter": "logzioFormat",
+        "token": config["logzio_token"],
+        "logs_drain_timeout": 5,
+        "url": "https://listener-uk.logz.io:8071",
+    }
+    LOGGING_CONFIG["loggers"][""]["handlers"].append("logzio")
+logging.config.dictConfig(LOGGING_CONFIG)
 
+if config["sentry_url"]:
+    sentry_sdk.init(config["sentry_url"], traces_sample_rate=1.0)
 
-configure_logging(os.environ.get("CVE_BOT_LOGZIO_TOKEN"), os.environ.get("CVE_BOT_LOG_LEVEL", "INFO"))
 logger = logging.getLogger(__name__)
-
-sentry_url = os.environ.get("CVE_BOT_SENTRY_URL")
-if sentry_url:
-    sentry_sdk.init(sentry_url, traces_sample_rate=1.0)
 
 
 def start(update: Update, _: CallbackContext) -> None:
@@ -66,7 +64,7 @@ def echo(update: Update, _: CallbackContext) -> None:
 
 
 def main() -> None:
-    updater = Updater(os.environ["CVE_BOT_TOKEN"])
+    updater = Updater(config["token"])
 
     dispatcher = updater.dispatcher
 

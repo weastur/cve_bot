@@ -4,12 +4,14 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
+from cve_bot.config import get_config
+
 config = context.config
+app_config = get_config()
 fileConfig(config.config_file_name)
 target_metadata = None
 
-db_path = os.environ.get("CVE_BOT_DB_PATH", "./main.db")
-db_url = f"sqlite:///{db_path}"
+db_url = f"sqlite:///{app_config['db_path']}"
 config.set_main_option("sqlalchemy.url", db_url)
 
 
