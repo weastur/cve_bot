@@ -11,7 +11,7 @@ py_build: clean
 	python -m build
 
 docker_build: clean
-	docker build . -t weastur/cve_bot:latest -t weastur/cve_bot:${VERSION}
+	docker build . --build-arg=VERSION=${VERSION} -t weastur/cve_bot:latest -t weastur/cve_bot:${VERSION}
 
 py_push: py_build
 	twine upload dist/cve_bot-${VERSION}*

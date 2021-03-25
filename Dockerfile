@@ -1,11 +1,13 @@
 FROM python:3.9.2-alpine3.13
 
+ARG VERSION
+
 RUN apk add --no-cache \
         git \
         gcc \
         g++ \
         musl-dev \
-    && pip3 install cve-bot==0.0.5 \
+    && pip3 install cve-bot==${VERSION} \
     && mkdir /cve_bot
 
 COPY ./docker-entrypoint.sh /
