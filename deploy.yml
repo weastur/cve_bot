@@ -2,6 +2,9 @@
 - name: Deploy to production
   hosts: prod
   become: true
+  vars:
+    docker_py_version: 1.10.6
+    version: latest
 
   tasks:
     - name: Copy data directory
@@ -21,12 +24,12 @@
 
     - name: Install ansible docker deps
       pip:
-        name: docker-py==1.10.6
+        name: docker-py=={{ docker_py_version }}
 
     - name: Create a container
       docker_container:
         name: cve-bot
-        image: weastur/cve_bot:latest
+        image: weastur/cve_bot:{{ version }}
         volumes:
           - /srv/data:/cve_bot
         hostname: cve-bot
