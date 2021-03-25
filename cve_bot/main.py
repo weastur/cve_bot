@@ -11,7 +11,7 @@ from cve_bot.updaters import debian_update
 
 config = get_config()
 
-LOGGING_CONFIG = {
+logging_config = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
@@ -29,8 +29,8 @@ LOGGING_CONFIG = {
     "loggers": {"": {"level": "DEBUG", "handlers": ["console"], "propagate": True}},
 }
 if config["logzio_token"] is not None:
-    LOGGING_CONFIG["formatters"]["logzioFormat"] = {"format": '{"additional_field": "value"}', "validate": False}
-    LOGGING_CONFIG["handlers"]["logzio"] = {
+    logging_config["formatters"]["logzioFormat"] = {"format": '{"additional_field": "value"}', "validate": False}
+    logging_config["handlers"]["logzio"] = {
         "class": "logzio.handler.LogzioHandler",
         "level": config["log_level"],
         "formatter": "logzioFormat",
@@ -38,8 +38,8 @@ if config["logzio_token"] is not None:
         "logs_drain_timeout": 5,
         "url": "https://listener-uk.logz.io:8071",
     }
-    LOGGING_CONFIG["loggers"][""]["handlers"].append("logzio")
-logging.config.dictConfig(LOGGING_CONFIG)
+    logging_config["loggers"][""]["handlers"].append("logzio")
+logging.config.dictConfig(logging_config)
 
 if config["sentry_url"]:
     sentry_sdk.init(config["sentry_url"], traces_sample_rate=1.0)
