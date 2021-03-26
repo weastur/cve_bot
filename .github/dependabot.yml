@@ -6,6 +6,8 @@ updates:
       interval: "daily"
     labels:
       - "dependencies-update"
+    ignore:
+      - dependency-name: "apscheduler"
     commit-message:
       prefix: "[PIP]"
 
