@@ -48,27 +48,28 @@ logger = logging.getLogger(__name__)
 
 
 def main() -> None:
-    scheduler = BackgroundScheduler(
-        {
-            "apscheduler.executors.default": {
-                "class": "apscheduler.executors.pool:ThreadPoolExecutor",
-                "max_workers": "1",
-            },
-        }
-    )
-    scheduler.add_job(debian_update, CronTrigger.from_crontab(config["update_cron"]))
-    scheduler.start()
-
-    updater = Updater(config["token"])
-
-    dispatcher = updater.dispatcher
-
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(CommandHandler("help", help_command))
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
-
-    updater.start_polling()
-    updater.idle()
+    debian_update()
+    # scheduler = BackgroundScheduler(
+    #     {
+    #         "apscheduler.executors.default": {
+    #             "class": "apscheduler.executors.pool:ThreadPoolExecutor",
+    #             "max_workers": "1",
+    #         },
+    #     }
+    # )
+    # scheduler.add_job(debian_update, CronTrigger.from_crontab(config["update_cron"]))
+    # scheduler.start()
+    #
+    # updater = Updater(config["token"])
+    #
+    # dispatcher = updater.dispatcher
+    #
+    # dispatcher.add_handler(CommandHandler("start", start))
+    # dispatcher.add_handler(CommandHandler("help", help_command))
+    # dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
+    #
+    # updater.start_polling()
+    # updater.idle()
 
 
 if __name__ == "__main__":
