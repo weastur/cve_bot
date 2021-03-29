@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Table, Text
+from sqlalchemy import Column, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
@@ -10,7 +10,7 @@ class PackageCVE(Base):
     package_name = Column(String, ForeignKey("packages.name", ondelete="cascade"), nullable=False, primary_key=True)
     cve_name = Column(String, ForeignKey("cve.name", ondelete="cascade"), nullable=False, primary_key=True)
     sid_status = Column(String(32), nullable=False, default="")
-    sid_rgency = Column(String(64), nullable=False, default="")
+    sid_urgency = Column(String(64), nullable=False, default="")
     sid_fixed_version = Column(String(64), nullable=False, default="")
     bullseye_status = Column(String(32), nullable=False, default="")
     bullseye_urgency = Column(String(64), nullable=False, default="")
