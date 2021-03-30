@@ -45,4 +45,4 @@ class CVE(Base):
     packages = relationship("PackageCVE", back_populates="cve")
 
     def __repr__(self):
-        return f"CVE(name={self.name} scope={self.scope} debianbug={self.scope})"
+        return f"CVE(name={self.name} scope={self.scope} debianbug={self.debianbug})"
