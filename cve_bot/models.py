@@ -92,4 +92,16 @@ class Subscription(Base):
     )
 
     def __repr__(self):
-        return f"Subscription(id={self.id} chat_id={self.chat_id} cve={self.debianbug})"
+        return f"Subscription(id={self.id} chat_id={self.chat_id} cve={self.cve})"
+
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    subscription_id = Column(Integer, ForeignKey("subscriptions.id"))
+    subscription = relationship("Subscription")
+    information = Column(Text, nullable=False)
+
+    def __repr__(self):
+        return f"Notification(id={self.id} chat_id={self.chat_id})"
