@@ -1,7 +1,7 @@
 import logging
 
 import requests
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from cve_bot import db
@@ -19,15 +19,39 @@ def _get_all_db_packages(session):
 
 
 def _get_all_db_cve(session):
-    stmt = select(CVE.name)
-    return {retval[0] for retval in session.execute(stmt)}
+    stmt = select(CVE)
+    return {result_row[0].name: result_row[0] for result_row in session.execute(stmt)}
 
 
-def _get_all_debian_cve(security_info):
-    current_cve = []
-    for cve in security_info.values():
-        current_cve.extend(cve.keys())
-    return set(current_cve)
+def _get_all_db_package_cve(session):
+    result_set = session.execute(select(PackageCVE))
+    return {result_row[0].pk: result_row[0] for result_row in result_set}
+
+
+def _extract_cve_field_values(security_info, package_name, cve_name):
+    return {
+        "scope": security_info[package_name][cve_name].get("scope", ""),
+        "description": security_info[package_name][cve_name].get("description", ""),
+        "debianbug": security_info[package_name][cve_name].get("debianbug"),
+    }
+
+
+def _extract_package_cve_filed_values(security_info, package_name, cve_name):
+    cve_info = security_info[package_name][cve_name]
+    return {
+        "sid_status": cve_info["releases"].get("sid", {}).get("status", ""),
+        "sid_urgency": cve_info["releases"].get("sid", {}).get("urgency", ""),
+        "sid_fixed_version": cve_info["releases"].get("sid", {}).get("fixed_version", ""),
+        "bullseye_status": cve_info["releases"].get("bullseye", {}).get("status", ""),
+        "bullseye_urgency": cve_info["releases"].get("bullseye", {}).get("urgency", ""),
+        "bullseye_fixed_version": cve_info["releases"].get("bullseye", {}).get("fixed_version", ""),
+        "stretch_status": cve_info["releases"].get("stretch", {}).get("status", ""),
+        "stretch_urgency": cve_info["releases"].get("stretch", {}).get("urgency", ""),
+        "stretch_fixed_version": cve_info["releases"].get("stretch", {}).get("fixed_version", ""),
+        "buster_status": cve_info["releases"].get("buster", {}).get("status", ""),
+        "buster_urgency": cve_info["releases"].get("buster", {}).get("urgency", ""),
+        "buster_fixed_version": cve_info["releases"].get("buster", {}).get("fixed_version", ""),
+    }
 
 
 def _create_packages(db_engine, security_info):
@@ -41,82 +65,40 @@ def _create_packages(db_engine, security_info):
 
 def _create_cve(db_engine, security_info):  # noqa: WPS210
     with Session(db_engine) as session:
-        diff = _get_all_debian_cve(security_info) - _get_all_db_cve(session)
+        db_cve = _get_all_db_cve(session)
         for package_name in security_info:
             for cve_name in security_info[package_name]:
-                fields_values = {
-                    "scope": security_info[package_name][cve_name].get("scope", ""),
-                    "description": security_info[package_name][cve_name].get("description", ""),
-                    "debianbug": security_info[package_name][cve_name].get("debianbug"),
-                }
-                if cve_name in diff:
-                    session.add(
-                        CVE(
-                            name=cve_name,
-                            **fields_values,
-                        )
-                    )
-                    diff.remove(cve_name)
+                field_values = _extract_cve_field_values(security_info, package_name, cve_name)
+                current_cve = db_cve.get(cve_name)
+                if current_cve is not None:
+                    current_cve.set_values(**field_values)
                 else:
-                    stmt = update(CVE).where(CVE.name == cve_name).values(**fields_values)  # noqa: WPS221
-                    session.execute(stmt)
-            session.commit()
+                    db_cve[cve_name] = CVE(
+                        name=cve_name,
+                        **field_values,
+                    )
+                    session.add(db_cve[cve_name])
+        session.commit()
 
 
-def _create_package_cve(db_engine, security_info):
+def _create_package_cve(db_engine, security_info):  # noqa: WPS210
     with Session(db_engine) as session:
+        db_package_cve = _get_all_db_package_cve(session)
         for package_name in security_info:
             for cve_name in security_info[package_name]:
-                exists = (
-                    session.query(PackageCVE).filter_by(cve_name=cve_name, package_name=package_name).count() == 1
-                )  # noqa: WPS221
-                field_values = {
-                    "sid_status": security_info[package_name][cve_name]["releases"]
-                    .get("sid", {})
-                    .get("status", ""),  # noqa: WPS221
-                    "sid_urgency": security_info[package_name][cve_name]["releases"]
-                    .get("sid", {})
-                    .get("urgency", ""),  # noqa: WPS221
-                    "sid_fixed_version": security_info[package_name][cve_name]["releases"]
-                    .get("sid", {})
-                    .get("fixed_version", ""),
-                    "bullseye_status": security_info[package_name][cve_name]["releases"]
-                    .get("bullseye", {})
-                    .get("status", ""),
-                    "bullseye_urgency": security_info[package_name][cve_name]["releases"]
-                    .get("bullseye", {})
-                    .get("urgency", ""),
-                    "bullseye_fixed_version": security_info[package_name][cve_name]["releases"]
-                    .get("bullseye", {})
-                    .get("fixed_version", ""),
-                    "stretch_status": security_info[package_name][cve_name]["releases"]
-                    .get("stretch", {})
-                    .get("status", ""),
-                    "stretch_urgency": security_info[package_name][cve_name]["releases"]
-                    .get("stretch", {})
-                    .get("urgency", ""),
-                    "stretch_fixed_version": security_info[package_name][cve_name]["releases"]
-                    .get("stretch", {})
-                    .get("fixed_version", ""),
-                    "buster_status": security_info[package_name][cve_name]["releases"]
-                    .get("buster", {})
-                    .get("status", ""),
-                    "buster_urgency": security_info[package_name][cve_name]["releases"]
-                    .get("buster", {})
-                    .get("urgency", ""),
-                    "buster_fixed_version": security_info[package_name][cve_name]["releases"]
-                    .get("buster", {})
-                    .get("fixed_version", ""),
-                }
-                if exists:
-                    session.execute(
-                        update(PackageCVE)
-                        .where(PackageCVE.cve_name == cve_name and PackageCVE.package_name == package_name)
-                        .values(**field_values)
-                    )
+                field_values = _extract_package_cve_filed_values(security_info, package_name, cve_name)
+                current_pk = PackageCVE.get_pk(package_name, cve_name)
+                current_package_cve = db_package_cve.get(current_pk)
+                if current_package_cve is not None:
+                    current_package_cve.set_values(**field_values)
                 else:
-                    session.add(PackageCVE(cve_name=cve_name, package_name=package_name, **field_values))
-                session.commit()
+                    db_package_cve[current_pk] = PackageCVE(
+                        cve_name=cve_name,
+                        package_name=package_name,
+                        **field_values,
+                    )
+                    session.add(db_package_cve[current_pk])
+        session.commit()
 
 
 def debian_update():
@@ -128,3 +110,4 @@ def debian_update():
     _create_packages(db_engine, packages)
     _create_cve(db_engine, packages)
     _create_package_cve(db_engine, packages)
+    logger.info("Done")

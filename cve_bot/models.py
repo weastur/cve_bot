@@ -24,6 +24,28 @@ class PackageCVE(Base):
     package = relationship("Package", back_populates="cve")
     cve = relationship("CVE", back_populates="packages")
 
+    def set_values(self, **kwargs):
+        self.sid_status = kwargs["sid_status"]
+        self.sid_urgency = kwargs["sid_urgency"]
+        self.sid_fixed_version = kwargs["sid_fixed_version"]
+        self.bullseye_status = kwargs["bullseye_status"]
+        self.bullseye_urgency = kwargs["bullseye_urgency"]
+        self.bullseye_fixed_version = kwargs["bullseye_fixed_version"]
+        self.buster_status = kwargs["buster_status"]
+        self.buster_urgency = kwargs["buster_urgency"]
+        self.buster_fixed_version = kwargs["buster_fixed_version"]
+        self.stretch_status = kwargs["stretch_status"]
+        self.stretch_urgency = kwargs["stretch_urgency"]
+        self.stretch_fixed_version = kwargs["stretch_fixed_version"]
+
+    @staticmethod
+    def get_pk(package_name, cve_name):
+        return f"{package_name}:{cve_name}"
+
+    @property
+    def pk(self):
+        return self.get_pk(self.package_name, self.cve_name)
+
 
 class Package(Base):
     __tablename__ = "packages"
@@ -43,6 +65,11 @@ class CVE(Base):
     scope = Column(String(64), nullable=False, default="")
     debianbug = Column(Integer, nullable=True)
     packages = relationship("PackageCVE", back_populates="cve")
+
+    def set_values(self, **kwargs):
+        self.scope = kwargs["scope"]
+        self.description = kwargs["description"]
+        self.debianbug = kwargs["debianbug"]
 
     def __repr__(self):
         return f"CVE(name={self.name} scope={self.scope} debianbug={self.debianbug})"
