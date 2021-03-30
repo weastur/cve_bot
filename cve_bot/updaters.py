@@ -15,12 +15,12 @@ INFO_URL = "https://security-tracker.debian.org/tracker/data/json"
 
 def _get_all_db_packages(session):
     stmt = select(Package.name)
-    return {retval[0] for retval in session.execute(stmt).all()}
+    return {retval[0] for retval in session.execute(stmt)}
 
 
 def _get_all_db_cve(session):
     stmt = select(CVE.name)
-    return {retval[0] for retval in session.execute(stmt).all()}
+    return {retval[0] for retval in session.execute(stmt)}
 
 
 def _get_all_debian_cve(security_info):
