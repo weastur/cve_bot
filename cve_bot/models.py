@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Text
+from sqlalchemy import Column, ForeignKey, Integer, String, Table, Text
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
@@ -73,3 +73,23 @@ class CVE(Base):
 
     def __repr__(self):
         return f"CVE(name={self.name} scope={self.scope} debianbug={self.debianbug})"
+
+
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+
+    id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    chat_id = Column(Integer, nullable=False)
+    cve = relationship(
+        "CVE",
+        secondary=Table(
+            "subscription_cve",
+            Base.metadata,
+            Column("cve_name", Integer, ForeignKey("cve.name"), primary_key=True, nullable=False),
+            Column("subscription_id", Integer, ForeignKey("subscriptions.id"), primary_key=True, nullable=False),
+        ),
+        backref="subscriptions",
+    )
+
+    def __repr__(self):
+        return f"Subscription(id={self.id} chat_id={self.chat_id} cve={self.debianbug})"
