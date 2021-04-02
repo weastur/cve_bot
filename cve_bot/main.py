@@ -3,10 +3,26 @@ import logging.config  # noqa: WPS301 WPS458
 import sentry_sdk
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
+from telegram.ext import (
+    CallbackQueryHandler,
+    CommandHandler,
+    ConversationHandler,
+    Updater,
+)
 
 from cve_bot.config import get_config
-from cve_bot.handlers import echo, help_command, start
+from cve_bot.handlers import (
+    CallBackData,
+    Stage,
+    info_by_cve,
+    info_by_package,
+    select_info_type,
+    select_subscription_type,
+    start,
+    subscriptions_my,
+    subscriptions_new,
+    subscriptions_remove,
+)
 from cve_bot.updaters import debian_update
 
 config = get_config()
@@ -63,9 +79,41 @@ def main() -> None:
 
     dispatcher = updater.dispatcher
 
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(CommandHandler("help", help_command))
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
+    subscriptions_conv_handler = ConversationHandler(
+        entry_points=[CallbackQueryHandler(select_subscription_type, pattern=f"^{CallBackData.subscription}$")],
+        states={
+            Stage.subscription: [
+                CallbackQueryHandler(subscriptions_my, pattern=f"^{CallBackData.subscriptions_my}$"),
+                CallbackQueryHandler(subscriptions_remove, pattern=f"^{CallBackData.subscriptions_remove}$"),
+                CallbackQueryHandler(subscriptions_new, pattern=f"^{CallBackData.subscriptions_new}$"),
+            ],
+        },
+        fallbacks=[CallbackQueryHandler(select_subscription_type, pattern=f"^{CallBackData.subscription}$")],
+    )
+
+    info_conv_handler = ConversationHandler(
+        entry_points=[CallbackQueryHandler(select_info_type, pattern=f"^{CallBackData.info}$")],
+        states={
+            Stage.info: [
+                CallbackQueryHandler(info_by_package, pattern=f"^{CallBackData.info_by_package}$"),
+                CallbackQueryHandler(info_by_cve, pattern=f"^{CallBackData.info_by_cve}$"),
+            ],
+        },
+        fallbacks=[CallbackQueryHandler(select_info_type, pattern=f"^{CallBackData.info}$")],
+    )
+
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler("start", start)],
+        states={
+            Stage.direction: [
+                info_conv_handler,
+                subscriptions_conv_handler,
+            ],
+        },
+        fallbacks=[CommandHandler("start", start)],
+    )
+
+    dispatcher.add_handler(conv_handler)
 
     updater.start_polling()
     updater.idle()
