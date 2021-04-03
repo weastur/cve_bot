@@ -22,6 +22,7 @@ from cve_bot.handlers import (
     subscriptions_my,
     subscriptions_new,
     subscriptions_remove,
+    stop,
 )
 from cve_bot.updaters import debian_update
 
@@ -110,7 +111,7 @@ def main() -> None:
                 subscriptions_conv_handler,
             ],
         },
-        fallbacks=[CommandHandler("start", start)],
+        fallbacks=[CommandHandler("start", stop)],
     )
 
     dispatcher.add_handler(conv_handler)

@@ -2,13 +2,14 @@ import enum
 import logging
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CallbackContext
+from telegram.ext import CallbackContext, ConversationHandler
 
 
 class Stage(enum.IntEnum):
     direction = 0
     info = 1  # noqa: WPS110
     subscription = 2
+    end = ConversationHandler.END
 
 
 class CallBackData(str, enum.Enum):  # noqa: WPS600
@@ -119,3 +120,9 @@ def subscriptions_remove(update: Update, _: CallbackContext) -> int:
     update.callback_query.edit_message_text(text=text)
 
     return Stage.subscription
+
+
+def stop(update: Update, _: CallbackContext) -> int:
+    update.message.reply_text('Okay, bye.')
+
+    return Stage.end
