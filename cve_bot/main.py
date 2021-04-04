@@ -13,7 +13,7 @@ from telegram.ext import (
 from cve_bot.config import get_config
 from cve_bot.handlers import (
     CallBackData,
-    Stage,
+    end_second_level, Stage,
     info_by_cve,
     info_by_package,
     select_info_type,
@@ -100,7 +100,11 @@ def main() -> None:
                 CallbackQueryHandler(info_by_cve, pattern=f"^{CallBackData.info_by_cve}$"),
             ],
         },
-        fallbacks=[CallbackQueryHandler(select_info_type, pattern=f"^{CallBackData.info}$")],
+        fallbacks=[CallbackQueryHandler(end_second_level, pattern=f"^{CallBackData.info_back}$")],
+        map_to_parent={
+            Stage.end: Stage.direction,
+            Stage.stopping: Stage.end
+        }
     )
 
     conv_handler = ConversationHandler(
@@ -110,8 +114,9 @@ def main() -> None:
                 info_conv_handler,
                 subscriptions_conv_handler,
             ],
+            Stage.stopping: [CommandHandler('start', start)],
         },
-        fallbacks=[CommandHandler("start", stop)],
+        fallbacks=[CommandHandler("stop", stop)],
     )
 
     dispatcher.add_handler(conv_handler)
