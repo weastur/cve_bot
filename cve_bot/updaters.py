@@ -3,6 +3,7 @@ import logging
 import requests
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from telegram.ext import CallbackContext
 
 from cve_bot import db
 from cve_bot.models import CVE, Package, PackageCVE
@@ -101,7 +102,7 @@ def _create_package_cve(db_engine, security_info):  # noqa: WPS210
         session.commit()
 
 
-def debian_update():
+def debian_update(_: CallbackContext):
     response = requests.get(INFO_URL)
     response.raise_for_status()
     packages = response.json()

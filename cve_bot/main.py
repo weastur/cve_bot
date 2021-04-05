@@ -1,8 +1,6 @@
 import logging.config  # noqa: WPS301 WPS458
 
 import sentry_sdk
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.cron import CronTrigger
 from telegram.ext import (
     CallbackQueryHandler,
     CommandHandler,
@@ -70,11 +68,10 @@ logger = logging.getLogger(__name__)
 
 
 def main() -> None:
-    _start_scheduler()
-
     updater = Updater(config["token"])
-
     dispatcher = updater.dispatcher
+
+    updater.job_queue.run_repeating(debian_update, interval=config["update_interval"])
 
     subscriptions_conv_handler = ConversationHandler(
         entry_points=[CallbackQueryHandler(select_subscription_type, pattern=f"^{CallBackData.subscription}$")],
@@ -125,19 +122,6 @@ def main() -> None:
 
     updater.start_polling()
     updater.idle()
-
-
-def _start_scheduler():
-    scheduler = BackgroundScheduler(
-        {
-            "apscheduler.executors.default": {
-                "class": "apscheduler.executors.pool:ThreadPoolExecutor",
-                "max_workers": "1",
-            },
-        }
-    )
-    scheduler.add_job(debian_update, CronTrigger.from_crontab(config["update_cron"]))
-    scheduler.start()
 
 
 if __name__ == "__main__":

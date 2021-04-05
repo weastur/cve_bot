@@ -10,6 +10,6 @@ def get_config():
             "sentry_url": os.environ.get("CVE_BOT_SENTRY_URL"),
             "log_level": os.environ.get("CVE_BOT_LOG_LEVEL", "INFO"),
             "db_path": os.environ.get("CVE_BOT_DB_PATH", "./main.db"),
-            "update_cron": os.environ.get("CVE_BOT_UPDATE_CRON", "42 * * * *"),
+            "update_interval": int(os.environ.get("CVE_BOT_UPDATE_INTERVAL", "60")),
         }
     )
