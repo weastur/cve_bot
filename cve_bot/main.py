@@ -117,6 +117,7 @@ def main() -> None:
                 CallbackQueryHandler(subscriptions_remove, pattern=f"^{CallBackData.subscriptions_remove}$"),
                 CallbackQueryHandler(subscriptions_new, pattern=f"^{CallBackData.subscriptions_new}$"),
             ],
+            Stage.info_typing: [MessageHandler(Filters.text & ~Filters.command, save_input)],
         },
         fallbacks=[
             CallbackQueryHandler(end_second_level, pattern=f"^{CallBackData.subscriptions_back}$"),

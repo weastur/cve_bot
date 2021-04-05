@@ -11,6 +11,8 @@ ACTION = "ACTION"
 class Action(enum.IntEnum):
     info_by_package = 0
     info_by_cve = 1
+    subscriptions_new = 2
+    subscriptions_remove = 3
 
 
 class Stage(enum.IntEnum):
@@ -134,22 +136,26 @@ def subscriptions_my(update: Update, _: CallbackContext) -> int:
     return Stage.info_typing
 
 
-def subscriptions_new(update: Update, _: CallbackContext) -> int:
+def subscriptions_new(update: Update, context: CallbackContext) -> int:
     text = "New subscriptions"
 
+    context.user_data[ACTION] = Action.subscriptions_new
+
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text)
 
-    return Stage.stopping
+    return Stage.info_typing
 
 
-def subscriptions_remove(update: Update, _: CallbackContext) -> int:
+def subscriptions_remove(update: Update, context: CallbackContext) -> int:
     text = "Remove subscriptions"
 
+    context.user_data[ACTION] = Action.subscriptions_remove
+
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text)
 
-    return Stage.stopping
+    return Stage.info_typing
 
 
 def stop(update: Update, _: CallbackContext) -> int:
