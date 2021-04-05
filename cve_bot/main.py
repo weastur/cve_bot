@@ -13,16 +13,18 @@ from telegram.ext import (
 from cve_bot.config import get_config
 from cve_bot.handlers import (
     CallBackData,
-    end_second_level, Stage,
+    Stage,
+    end_second_level,
     info_by_cve,
     info_by_package,
     select_info_type,
     select_subscription_type,
     start,
+    stop,
+    stop_nested,
     subscriptions_my,
     subscriptions_new,
     subscriptions_remove,
-    stop,
 )
 from cve_bot.updaters import debian_update
 
@@ -89,11 +91,11 @@ def main() -> None:
                 CallbackQueryHandler(subscriptions_new, pattern=f"^{CallBackData.subscriptions_new}$"),
             ],
         },
-        fallbacks=[CallbackQueryHandler(end_second_level, pattern=f"^{CallBackData.subscriptions_back}$")],
-        map_to_parent={
-            Stage.end: Stage.direction,
-            Stage.stopping: Stage.end
-        }
+        fallbacks=[
+            CallbackQueryHandler(end_second_level, pattern=f"^{CallBackData.subscriptions_back}$"),
+            CommandHandler("stop", stop_nested),
+        ],
+        map_to_parent={Stage.end: Stage.direction, Stage.stopping: Stage.end},
     )
 
     info_conv_handler = ConversationHandler(
@@ -104,11 +106,11 @@ def main() -> None:
                 CallbackQueryHandler(info_by_cve, pattern=f"^{CallBackData.info_by_cve}$"),
             ],
         },
-        fallbacks=[CallbackQueryHandler(end_second_level, pattern=f"^{CallBackData.info_back}$")],
-        map_to_parent={
-            Stage.end: Stage.direction,
-            Stage.stopping: Stage.end
-        }
+        fallbacks=[
+            CallbackQueryHandler(end_second_level, pattern=f"^{CallBackData.info_back}$"),
+            CommandHandler("stop", stop_nested),
+        ],
+        map_to_parent={Stage.end: Stage.direction, Stage.stopping: Stage.end},
     )
 
     conv_handler = ConversationHandler(
@@ -118,7 +120,7 @@ def main() -> None:
                 info_conv_handler,
                 subscriptions_conv_handler,
             ],
-            Stage.stopping: [CommandHandler('start', start)],
+            Stage.stopping: [CommandHandler("start", start)],
         },
         fallbacks=[CommandHandler("stop", stop)],
     )

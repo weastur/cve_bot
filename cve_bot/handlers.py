@@ -4,8 +4,7 @@ import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext, ConversationHandler
 
-
-START_OVER = 'START_OVER'
+START_OVER = "START_OVER"
 
 
 class Stage(enum.IntEnum):
@@ -66,7 +65,7 @@ def select_info_type(update: Update, _: CallbackContext) -> int:
         ],
         [
             InlineKeyboardButton(text="Back", callback_data=CallBackData.info_back),
-        ]
+        ],
     ]
     keyboard = InlineKeyboardMarkup(buttons)
 
@@ -87,7 +86,7 @@ def select_subscription_type(update: Update, _: CallbackContext) -> int:
         ],
         [
             InlineKeyboardButton(text="Back", callback_data=CallBackData.subscriptions_back),
-        ]
+        ],
     ]
     keyboard = InlineKeyboardMarkup(buttons)
 
@@ -143,7 +142,7 @@ def subscriptions_remove(update: Update, _: CallbackContext) -> int:
 
 
 def stop(update: Update, _: CallbackContext) -> int:
-    update.message.reply_text('Okay, bye.')
+    update.message.reply_text("Okay, bye.")
 
     return Stage.end
 
@@ -153,3 +152,9 @@ def end_second_level(update: Update, context: CallbackContext) -> int:
     start(update, context)
 
     return Stage.end
+
+
+def stop_nested(update: Update, _: CallbackContext) -> int:
+    update.message.reply_text("Okay, bye.")
+
+    return Stage.stopping
