@@ -68,7 +68,7 @@ logger = logging.getLogger(__name__)
 
 
 def main() -> None:
-    updater = Updater(config["token"])
+    updater = Updater(config["token"], workers=config["workers"])
     dispatcher = updater.dispatcher
 
     updater.job_queue.run_repeating(debian_update, interval=config["update_interval"])
