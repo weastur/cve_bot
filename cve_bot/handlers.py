@@ -42,7 +42,6 @@ logger = logging.getLogger(__name__)
 
 def start(update: Update, context: CallbackContext) -> int:
     text = "You may choose to get info from CVE database or work with your subscriptions. To abort, simply type /stop."
-
     buttons = [
         [
             InlineKeyboardButton(text="Get info from DB", callback_data=CallBackData.info),
@@ -50,7 +49,6 @@ def start(update: Update, context: CallbackContext) -> int:
         ]
     ]
     keyboard = InlineKeyboardMarkup(buttons)
-
     if context.user_data.get(START_OVER):
         update.callback_query.answer()
         update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
@@ -59,14 +57,12 @@ def start(update: Update, context: CallbackContext) -> int:
             "Hi, I'm Package CVE bot and I'm here to help you gather information about debian packages CVE."
         )
         update.message.reply_text(text=text, reply_markup=keyboard)
-
     context.user_data[START_OVER] = False
     return Stage.direction
 
 
 def select_info_type(update: Update, _: CallbackContext) -> int:
     text = "Get info by package or CVE name"
-
     buttons = [
         [
             InlineKeyboardButton(text="By package", callback_data=CallBackData.info_by_package),
@@ -77,16 +73,13 @@ def select_info_type(update: Update, _: CallbackContext) -> int:
         ],
     ]
     keyboard = InlineKeyboardMarkup(buttons)
-
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
-
     return Stage.info
 
 
 def select_subscription_type(update: Update, _: CallbackContext) -> int:
     text = "Subscriptions info"
-
     buttons = [
         [
             InlineKeyboardButton(text="My subscriptions", callback_data=CallBackData.subscriptions_my),
@@ -98,86 +91,67 @@ def select_subscription_type(update: Update, _: CallbackContext) -> int:
         ],
     ]
     keyboard = InlineKeyboardMarkup(buttons)
-
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
-
     return Stage.subscription
 
 
 def info_by_cve(update: Update, context: CallbackContext) -> int:
-    text = "CVE info"
-
+    text = "Enter CVE name"
     context.user_data[ACTION] = Action.info_by_cve
-
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text)
-
     return Stage.info_typing
 
 
 def info_by_package(update: Update, context: CallbackContext) -> int:
     text = "Enter package name"
-
     context.user_data[ACTION] = Action.info_by_package
-
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text)
-
     return Stage.info_typing
 
 
 def subscriptions_my(update: Update, _: CallbackContext) -> int:
     text = "My subscriptions"
-
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text)
-
     return Stage.info_typing
 
 
 def subscriptions_new(update: Update, context: CallbackContext) -> int:
-    text = "New subscriptions"
-
+    text = "Enter CVE name to subscribe to"
     context.user_data[ACTION] = Action.subscriptions_new
-
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text)
-
     return Stage.info_typing
 
 
 def subscriptions_remove(update: Update, context: CallbackContext) -> int:
-    text = "Remove subscriptions"
-
+    text = "Enter CVE name to unsubscribe"
     context.user_data[ACTION] = Action.subscriptions_remove
-
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text)
-
     return Stage.info_typing
 
 
 def stop(update: Update, _: CallbackContext) -> int:
     update.message.reply_text("Okay, bye.")
-
     return Stage.end
 
 
 def end_second_level(update: Update, context: CallbackContext) -> int:
     context.user_data[START_OVER] = True
     start(update, context)
-
     return Stage.end
 
 
 def stop_nested(update: Update, _: CallbackContext) -> int:
     update.message.reply_text("Okay, bye.")
-
     return Stage.stopping
 
 
-def save_input(update: Update, context: CallbackContext):
+def process_user_input(update: Update, context: CallbackContext):
     action = context.user_data.pop(ACTION)
-    update.message.reply_text(f"Action {action} for {update.message.text}")
+    update.message.reply_text(f"Action {action} for {update.message.text}")  # noqa: WPS237
     return Stage.stopping

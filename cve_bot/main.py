@@ -19,7 +19,7 @@ from cve_bot.handlers import (
     end_second_level,
     info_by_cve,
     info_by_package,
-    save_input,
+    process_user_input,
     select_info_type,
     select_subscription_type,
     start,
@@ -70,44 +70,11 @@ logger = logging.getLogger(__name__)
 
 
 def main() -> None:
-    scheduler = BackgroundScheduler(
-        {
-            "apscheduler.executors.default": {
-                "class": "apscheduler.executors.pool:ThreadPoolExecutor",
-                "max_workers": "1",
-            },
-        }
-    )
-    scheduler.add_job(debian_update, CronTrigger.from_crontab(config["update_cron"]))
-    scheduler.start()
+    _start_scheduler()
 
     updater = Updater(config["token"])
 
     dispatcher = updater.dispatcher
-
-    # description_conv = ConversationHandler(
-    #     entry_points=[
-    #         CallbackQueryHandler(
-    #             select_feature, pattern='',
-    #         )
-    #     ],
-    #     states={
-    #         SELECTING_FEATURE: [
-    #             CallbackQueryHandler(ask_for_input, pattern='^(?!' + str(END) + ').*$')
-    #         ],
-    #         TYPING: [MessageHandler(Filters.text & ~Filters.command, save_input)],
-    #     },
-    #     fallbacks=[
-    #         CallbackQueryHandler(end_describing, pattern='^' + str(END) + '$'),
-    #         CommandHandler('stop', stop_nested),
-    #     ],
-    #     map_to_parent={
-    #         # Return to second level menu
-    #         END: SELECTING_LEVEL,
-    #         # End conversation altogether
-    #         STOPPING: STOPPING,
-    #     },
-    # )
 
     subscriptions_conv_handler = ConversationHandler(
         entry_points=[CallbackQueryHandler(select_subscription_type, pattern=f"^{CallBackData.subscription}$")],
@@ -117,7 +84,7 @@ def main() -> None:
                 CallbackQueryHandler(subscriptions_remove, pattern=f"^{CallBackData.subscriptions_remove}$"),
                 CallbackQueryHandler(subscriptions_new, pattern=f"^{CallBackData.subscriptions_new}$"),
             ],
-            Stage.info_typing: [MessageHandler(Filters.text & ~Filters.command, save_input)],
+            Stage.info_typing: [MessageHandler(Filters.text & ~Filters.command, process_user_input)],
         },
         fallbacks=[
             CallbackQueryHandler(end_second_level, pattern=f"^{CallBackData.subscriptions_back}$"),
@@ -133,7 +100,7 @@ def main() -> None:
                 CallbackQueryHandler(info_by_package, pattern=f"^{CallBackData.info_by_package}$"),
                 CallbackQueryHandler(info_by_cve, pattern=f"^{CallBackData.info_by_cve}$"),
             ],
-            Stage.info_typing: [MessageHandler(Filters.text & ~Filters.command, save_input)],
+            Stage.info_typing: [MessageHandler(Filters.text & ~Filters.command, process_user_input)],
         },
         fallbacks=[
             CallbackQueryHandler(end_second_level, pattern=f"^{CallBackData.info_back}$"),
@@ -158,6 +125,19 @@ def main() -> None:
 
     updater.start_polling()
     updater.idle()
+
+
+def _start_scheduler():
+    scheduler = BackgroundScheduler(
+        {
+            "apscheduler.executors.default": {
+                "class": "apscheduler.executors.pool:ThreadPoolExecutor",
+                "max_workers": "1",
+            },
+        }
+    )
+    scheduler.add_job(debian_update, CronTrigger.from_crontab(config["update_cron"]))
+    scheduler.start()
 
 
 if __name__ == "__main__":
