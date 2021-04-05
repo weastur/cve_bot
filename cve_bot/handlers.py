@@ -5,6 +5,12 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext, ConversationHandler
 
 START_OVER = "START_OVER"
+ACTION = "ACTION"
+
+
+class Action(enum.IntEnum):
+    info_by_package = 0
+    info_by_cve = 1
 
 
 class Stage(enum.IntEnum):
@@ -12,6 +18,7 @@ class Stage(enum.IntEnum):
     info = 1  # noqa: WPS110
     subscription = 2
     stopping = 3
+    info_typing = 4
     end = ConversationHandler.END
 
 
@@ -96,22 +103,26 @@ def select_subscription_type(update: Update, _: CallbackContext) -> int:
     return Stage.subscription
 
 
-def info_by_cve(update: Update, _: CallbackContext) -> int:
+def info_by_cve(update: Update, context: CallbackContext) -> int:
     text = "CVE info"
 
-    update.callback_query.answer()
-    update.callback_query.edit_message_text(text=text)
-
-    return Stage.stopping
-
-
-def info_by_package(update: Update, _: CallbackContext) -> int:
-    text = "Package info"
+    context.user_data[ACTION] = Action.info_by_cve
 
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text)
 
-    return Stage.stopping
+    return Stage.info_typing
+
+
+def info_by_package(update: Update, context: CallbackContext) -> int:
+    text = "Enter package name"
+
+    context.user_data[ACTION] = Action.info_by_package
+
+    update.callback_query.answer()
+    update.callback_query.edit_message_text(text=text)
+
+    return Stage.info_typing
 
 
 def subscriptions_my(update: Update, _: CallbackContext) -> int:
@@ -120,7 +131,7 @@ def subscriptions_my(update: Update, _: CallbackContext) -> int:
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text)
 
-    return Stage.stopping
+    return Stage.info_typing
 
 
 def subscriptions_new(update: Update, _: CallbackContext) -> int:
@@ -157,4 +168,10 @@ def end_second_level(update: Update, context: CallbackContext) -> int:
 def stop_nested(update: Update, _: CallbackContext) -> int:
     update.message.reply_text("Okay, bye.")
 
+    return Stage.stopping
+
+
+def save_input(update: Update, context: CallbackContext):
+    action = context.user_data.pop(ACTION)
+    update.message.reply_text(f"Action {action} for {update.message.text}")
     return Stage.stopping
