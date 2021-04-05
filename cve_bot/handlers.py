@@ -117,7 +117,7 @@ def subscriptions_my(update: Update, _: CallbackContext) -> int:
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text)
 
-    return Stage.subscription
+    return Stage.stopping
 
 
 def subscriptions_new(update: Update, _: CallbackContext) -> int:
@@ -126,7 +126,7 @@ def subscriptions_new(update: Update, _: CallbackContext) -> int:
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text)
 
-    return Stage.subscription
+    return Stage.stopping
 
 
 def subscriptions_remove(update: Update, _: CallbackContext) -> int:
@@ -135,7 +135,7 @@ def subscriptions_remove(update: Update, _: CallbackContext) -> int:
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text)
 
-    return Stage.subscription
+    return Stage.stopping
 
 
 def stop(update: Update, _: CallbackContext) -> int:

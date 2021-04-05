@@ -90,6 +90,10 @@ def main() -> None:
             ],
         },
         fallbacks=[CallbackQueryHandler(select_subscription_type, pattern=f"^{CallBackData.subscription}$")],
+        map_to_parent={
+            Stage.end: Stage.direction,
+            Stage.stopping: Stage.end
+        }
     )
 
     info_conv_handler = ConversationHandler(
