@@ -26,6 +26,7 @@ class CallBackData(str, enum.Enum):  # noqa: WPS600
     subscriptions_my = "subscriptions_my"
     subscriptions_new = "subscriptions_new"
     subscriptions_remove = "subscriptions_remove"
+    subscriptions_back = "subscriptions_back"
 
 
 logger = logging.getLogger(__name__)
@@ -83,6 +84,9 @@ def select_subscription_type(update: Update, _: CallbackContext) -> int:
             InlineKeyboardButton(text="My subscriptions", callback_data=CallBackData.subscriptions_my),
             InlineKeyboardButton(text="New", callback_data=CallBackData.subscriptions_new),
             InlineKeyboardButton(text="Remove", callback_data=CallBackData.subscriptions_remove),
+        ],
+        [
+            InlineKeyboardButton(text="Back", callback_data=CallBackData.subscriptions_back),
         ]
     ]
     keyboard = InlineKeyboardMarkup(buttons)
