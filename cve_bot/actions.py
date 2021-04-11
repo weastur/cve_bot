@@ -14,5 +14,5 @@ def remove_subscription(user_input):
     return f"remove subscription {user_input}"
 
 
-def get_my_subscriptions():
-    return "my subscriptions"
+def get_my_subscriptions(chat_id):
+    return f"my subscriptions {chat_id}"

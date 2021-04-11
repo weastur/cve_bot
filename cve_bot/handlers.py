@@ -124,9 +124,9 @@ def info_by_package(update: Update, context: CallbackContext) -> int:
     return Stage.info_typing
 
 
-def subscriptions_my(update: Update, _: CallbackContext) -> int:
+def subscriptions_my(update: Update, ctx: CallbackContext) -> int:
     update.callback_query.answer()
-    update.callback_query.edit_message_text(text=actions.get_my_subscriptions())
+    update.callback_query.edit_message_text(text=actions.get_my_subscriptions(update.effective_chat.id))
     return Stage.info_typing
 
 
