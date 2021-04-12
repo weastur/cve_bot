@@ -3,7 +3,12 @@ import logging
 import types
 
 import actions
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    ParseMode,
+    Update,
+)
 from telegram.ext import CallbackContext, ConversationHandler
 
 START_OVER = "START_OVER"
@@ -126,7 +131,9 @@ def info_by_package(update: Update, context: CallbackContext) -> int:
 
 def subscriptions_my(update: Update, ctx: CallbackContext) -> int:
     update.callback_query.answer()
-    update.callback_query.edit_message_text(text=actions.get_my_subscriptions(update.effective_chat.id))
+    update.callback_query.edit_message_text(
+        text=actions.get_my_subscriptions(update.effective_chat.id), parse_mode=ParseMode.MARKDOWN
+    )
     return Stage.info_typing
 
 
@@ -164,5 +171,7 @@ def stop_nested(update: Update, _: CallbackContext) -> int:
 
 def process_user_input(update: Update, context: CallbackContext):
     action = context.user_data.pop(ACTION)
-    update.message.reply_text(ACTION_MAPPING[action](update.message.text))  # noqa: WPS237
+    update.message.reply_text(
+        ACTION_MAPPING[action](update.message.text), parse_mode=ParseMode.MARKDOWN
+    )  # noqa: WPS237
     return Stage.stopping

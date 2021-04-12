@@ -57,6 +57,14 @@ class Package(Base):
         return f"Package(name={self.name!r})"
 
 
+subscription_cve = Table(
+    "subscription_cve",
+    Base.metadata,
+    Column("cve_name", Integer, ForeignKey("cve.name"), primary_key=True, nullable=False),
+    Column("subscription_id", Integer, ForeignKey("subscriptions.id"), primary_key=True, nullable=False),
+)
+
+
 class CVE(Base):
     __tablename__ = "cve"
 
@@ -65,6 +73,11 @@ class CVE(Base):
     scope = Column(String(64), nullable=False, default="")
     debianbug = Column(Integer, nullable=True)
     packages = relationship("PackageCVE", back_populates="cve")
+    subscriptions = relationship(
+        "Subscription",
+        secondary=subscription_cve,
+        back_populates="cve",
+    )
 
     def set_values(self, **kwargs):
         self.scope = kwargs["scope"]
@@ -82,17 +95,12 @@ class Subscription(Base):
     chat_id = Column(Integer, nullable=False)
     cve = relationship(
         "CVE",
-        secondary=Table(
-            "subscription_cve",
-            Base.metadata,
-            Column("cve_name", Integer, ForeignKey("cve.name"), primary_key=True, nullable=False),
-            Column("subscription_id", Integer, ForeignKey("subscriptions.id"), primary_key=True, nullable=False),
-        ),
-        backref="subscriptions",
+        secondary=subscription_cve,
+        back_populates="subscriptions",
     )
 
     def __repr__(self):
-        return f"Subscription(id={self.id} chat_id={self.chat_id} cve={self.cve})"
+        return f"Subscription(id={self.id} chat_id={self.chat_id})"
 
 
 class Notification(Base):
