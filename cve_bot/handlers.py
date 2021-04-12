@@ -114,10 +114,10 @@ def select_subscription_type(update: Update, _: CallbackContext) -> int:
 
 
 def info_by_cve(update: Update, context: CallbackContext) -> int:
-    text = "Enter CVE name"
+    text = "Enter CVE number. `YYYY-XXXXX` from `CVE-YYYY-XXXXX`"
     context.user_data[ACTION] = Action.info_by_cve
     update.callback_query.answer()
-    update.callback_query.edit_message_text(text=text)
+    update.callback_query.edit_message_text(text=text, parse_mode=ParseMode.MARKDOWN)
     return Stage.info_typing
 
 
@@ -134,7 +134,7 @@ def subscriptions_my(update: Update, ctx: CallbackContext) -> int:
     update.callback_query.edit_message_text(
         text=actions.get_my_subscriptions(update.effective_chat.id), parse_mode=ParseMode.MARKDOWN
     )
-    return Stage.info_typing
+    return Stage.stopping
 
 
 def subscriptions_new(update: Update, context: CallbackContext) -> int:
