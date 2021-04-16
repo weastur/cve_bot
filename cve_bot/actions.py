@@ -13,6 +13,7 @@ from cve_bot.formatters import (
 from cve_bot.models import CVE, PackageCVE, Subscription
 
 NOT_FOUND = "*Not found*"
+DONE = "*Done*"
 
 
 def _get_package_info_for_cve(session, cve):
@@ -21,7 +22,7 @@ def _get_package_info_for_cve(session, cve):
     return format_cve_with_packages(cve, package_cve)
 
 
-def get_package_info(user_input):
+def get_package_info(user_input, chat_id):
     db_engine = db.get_engine()
     with Session(db_engine) as session:
         stmt = select(CVE).join(CVE.packages).where(PackageCVE.package_name == user_input)  # noqa: WPS221
@@ -31,7 +32,7 @@ def get_package_info(user_input):
         return NOT_FOUND
 
 
-def get_cve_info(user_input):
+def get_cve_info(user_input, chat_id):
     db_engine = db.get_engine()
     with Session(db_engine) as session:
         stmt = select(CVE).where(CVE.name == f"CVE-{user_input}")  # noqa: WPS221
@@ -45,12 +46,34 @@ def get_cve_info(user_input):
         return NOT_FOUND
 
 
-def create_new_subscription(user_input):
-    return f"create new subscription {user_input}"
+def create_new_subscription(user_input, chat_id):
+    db_engine = db.get_engine()
+    with Session(db_engine) as session:
+        subscription = Subscription(chat_id=chat_id)
+        stmt = select(CVE).where(CVE.name == f"CVE-{user_input}")
+        cve = session.execute(stmt).scalars().first()
+        if not cve:
+            return NOT_FOUND
+        subscription.cve.append(cve)
+        session.add(subscription)
+        session.commit()
+        return DONE
 
 
-def remove_subscription(user_input):
-    return f"remove subscription {user_input}"
+def remove_subscription(user_input, chat_id):
+    db_engine = db.get_engine()
+    with Session(db_engine) as session:
+        stmt = (
+            select(Subscription)
+            .join(Subscription.cve)
+            .where(CVE.name == f"CVE-{user_input}", Subscription.chat_id == chat_id)
+        )
+        subscription = session.execute(stmt).scalars().first()
+        if subscription:
+            session.delete(subscription)
+            session.commit()
+            return DONE
+        return NOT_FOUND
 
 
 def get_my_subscriptions(chat_id):

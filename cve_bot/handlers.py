@@ -139,18 +139,18 @@ def subscriptions_my(update: Update, ctx: CallbackContext) -> int:
 
 
 def subscriptions_new(update: Update, context: CallbackContext) -> int:
-    text = "Enter CVE name to subscribe to"
+    text = "Enter CVE name to subscribe to. `YYYY-XXXXX` from `CVE-YYYY-XXXXX`"
     context.user_data[ACTION] = Action.subscriptions_new
     update.callback_query.answer()
-    update.callback_query.edit_message_text(text=text)
+    update.callback_query.edit_message_text(text=text, parse_mode=ParseMode.MARKDOWN)
     return Stage.info_typing
 
 
 def subscriptions_remove(update: Update, context: CallbackContext) -> int:
-    text = "Enter CVE name to unsubscribe"
+    text = "Enter CVE name to unsubscribe. `YYYY-XXXXX` from `CVE-YYYY-XXXXX`"
     context.user_data[ACTION] = Action.subscriptions_remove
     update.callback_query.answer()
-    update.callback_query.edit_message_text(text=text)
+    update.callback_query.edit_message_text(text=text, parse_mode=ParseMode.MARKDOWN)
     return Stage.info_typing
 
 
@@ -172,7 +172,7 @@ def stop_nested(update: Update, _: CallbackContext) -> int:
 
 def process_user_input(update: Update, context: CallbackContext):
     action = context.user_data.pop(ACTION)
-    reply_text_all = ACTION_MAPPING[action](update.message.text)
+    reply_text_all = ACTION_MAPPING[action](update.message.text, update.effective_chat["id"])
     for chunk_start in range(0, len(reply_text_all), MAX_MSG_LEN):
         update.message.reply_text(
             reply_text_all[chunk_start : chunk_start + MAX_MSG_LEN], parse_mode=ParseMode.MARKDOWN
