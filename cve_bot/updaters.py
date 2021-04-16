@@ -1,3 +1,4 @@
+import json
 import logging
 
 import requests
@@ -6,7 +7,7 @@ from sqlalchemy.orm import Session
 from telegram.ext import CallbackContext
 
 from cve_bot import db
-from cve_bot.models import CVE, Package, PackageCVE
+from cve_bot.models import CVE, Notification, Package, PackageCVE, Subscription
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +83,15 @@ def _create_cve(db_engine, security_info):  # noqa: WPS210
         session.commit()
 
 
+def _create_notifications(session, package_cve, changes):
+    if not changes:
+        return
+    changes = json.dumps(changes)
+    stmt = select(Subscription).join(Subscription.cve).where(CVE.name == package_cve.cve_name)  # noqa: WPS221
+    for subscription in session.execute(stmt).scalars().all():
+        session.add(Notification(subscription=subscription, information=changes))
+
+
 def _create_package_cve(db_engine, security_info):  # noqa: WPS210
     with Session(db_engine) as session:
         db_package_cve = _get_all_db_package_cve(session)
@@ -91,7 +101,7 @@ def _create_package_cve(db_engine, security_info):  # noqa: WPS210
                 current_pk = PackageCVE.get_pk(package_name, cve_name)
                 current_package_cve = db_package_cve.get(current_pk)
                 if current_package_cve is not None:
-                    current_package_cve.set_values(**field_values)
+                    _create_notifications(session, current_package_cve, current_package_cve.set_values(**field_values))
                 else:
                     db_package_cve[current_pk] = PackageCVE(
                         cve_name=cve_name,
