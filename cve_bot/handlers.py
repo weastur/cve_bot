@@ -13,6 +13,7 @@ from telegram.ext import CallbackContext, ConversationHandler
 
 START_OVER = "START_OVER"
 ACTION = "ACTION"
+MAX_MSG_LEN = 4096
 
 
 class Action(enum.IntEnum):
@@ -171,7 +172,9 @@ def stop_nested(update: Update, _: CallbackContext) -> int:
 
 def process_user_input(update: Update, context: CallbackContext):
     action = context.user_data.pop(ACTION)
-    update.message.reply_text(
-        ACTION_MAPPING[action](update.message.text), parse_mode=ParseMode.MARKDOWN
-    )  # noqa: WPS237
+    reply_text_all = ACTION_MAPPING[action](update.message.text)
+    for chunk_start in range(0, len(reply_text_all), MAX_MSG_LEN):
+        update.message.reply_text(
+            reply_text_all[chunk_start : chunk_start + MAX_MSG_LEN], parse_mode=ParseMode.MARKDOWN
+        )  # noqa: WPS237
     return Stage.stopping
