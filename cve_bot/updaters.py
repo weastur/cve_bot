@@ -89,7 +89,7 @@ def _create_notifications(session, package_cve, changes):
     changes = json.dumps(changes)
     stmt = select(Subscription).join(Subscription.cve).where(CVE.name == package_cve.cve_name)  # noqa: WPS221
     for subscription in session.execute(stmt).scalars().all():
-        session.add(Notification(subscription=subscription, information=changes))
+        session.add(Notification(subscription=subscription, information=changes, package_name=package_cve.package_name))
 
 
 def _create_package_cve(db_engine, security_info):  # noqa: WPS210

@@ -27,6 +27,7 @@ from cve_bot.handlers import (
     subscriptions_new,
     subscriptions_remove,
 )
+from cve_bot.notifications import send_notifications
 from cve_bot.updaters import debian_update
 
 config = get_config()
@@ -72,6 +73,9 @@ def main() -> None:
     dispatcher = updater.dispatcher
 
     updater.job_queue.run_repeating(debian_update, interval=config["update_interval"])
+    updater.job_queue.run_repeating(
+        send_notifications, first=config["notifications_offset"], interval=config["update_interval"]
+    )
 
     subscriptions_conv_handler = ConversationHandler(
         entry_points=[CallbackQueryHandler(select_subscription_type, pattern=f"^{CallBackData.subscription}$")],

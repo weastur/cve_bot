@@ -1,3 +1,6 @@
+import json
+
+
 def format_cve(cve):
     return f"{cve.name}\n{cve.description}\n"
 
@@ -37,6 +40,38 @@ def format_package_cve(package_cve):
          status: {package_cve.sid_status}
          urgency: {package_cve.sid_urgency}
          fixed\_version: {package_cve.sid_fixed_version}
+==============================
+"""
+
+
+def _format_notification_cve_property(cve_info, prop):
+    old = cve_info[prop]["old"]
+    new = cve_info[prop]["new"]
+    if old == new:
+        return new
+    return f"<s>{old}</s> -> <b>{new}</b>"
+
+
+def format_notification(notification):
+    cve_info = json.loads(notification.information)
+    return f"""==============================
+{notification.package_name}
+    stretch:
+         status: {_format_notification_cve_property(cve_info, 'stretch_status')}
+         urgency: {_format_notification_cve_property(cve_info, 'stretch_urgency')}
+         fixed_version: {_format_notification_cve_property(cve_info, 'stretch_fixed_version')}
+    buster:
+         status: {_format_notification_cve_property(cve_info, 'buster_status')}
+         urgency: {_format_notification_cve_property(cve_info, 'buster_urgency')}
+         fixed_version: {_format_notification_cve_property(cve_info, 'buster_fixed_version')}
+    bullseye:
+         status: {_format_notification_cve_property(cve_info, 'bullseye_status')}
+         urgency: {_format_notification_cve_property(cve_info, 'bullseye_urgency')}
+         fixed_version: {_format_notification_cve_property(cve_info, 'bullseye_fixed_version')}
+    sid:
+         status: {_format_notification_cve_property(cve_info, 'sid_status')}
+         urgency: {_format_notification_cve_property(cve_info, 'sid_urgency')}
+         fixed_version: {_format_notification_cve_property(cve_info, 'sid_fixed_version')}
 ==============================
 """
 

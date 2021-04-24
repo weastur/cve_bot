@@ -120,6 +120,8 @@ class Notification(Base):
     id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
     subscription_id = Column(Integer, ForeignKey("subscriptions.id"))
     subscription = relationship("Subscription")
+    package_name = Column(String, ForeignKey("packages.name"))
+    package = relationship("Package")
     information = Column(Text, nullable=False)
 
     def __repr__(self):
