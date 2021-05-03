@@ -52,8 +52,7 @@ def _format_notification_cve_property(cve_info, prop):
 
 def format_notification(notification):
     cve_info = json.loads(notification.information)
-    return f"""==============================
-<b>{notification.package_name}</b>
+    return f"""<b>{notification.package_name}</b>
     <i>stretch:</i>
          status: {_format_notification_cve_property(cve_info, 'stretch_status')}
          urgency: {_format_notification_cve_property(cve_info, 'stretch_urgency')}
@@ -70,7 +69,6 @@ def format_notification(notification):
          status: {_format_notification_cve_property(cve_info, 'sid_status')}
          urgency: {_format_notification_cve_property(cve_info, 'sid_urgency')}
          fixed_version: {_format_notification_cve_property(cve_info, 'sid_fixed_version')}
-==============================
 """
 
 
