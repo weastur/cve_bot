@@ -11,6 +11,8 @@ from telegram import (
 )
 from telegram.ext import CallbackContext, ConversationHandler
 
+from cve_bot.messages import MessageSplitter
+
 START_OVER = "START_OVER"
 ACTION = "ACTION"
 MAX_MSG_LEN = 4096
@@ -131,10 +133,10 @@ def info_by_package(update: Update, context: CallbackContext) -> int:
 
 
 def subscriptions_my(update: Update, ctx: CallbackContext) -> int:
-    update.callback_query.answer()
-    update.callback_query.edit_message_text(
-        text=actions.get_my_subscriptions(update.effective_chat.id), parse_mode=ParseMode.MARKDOWN
-    )
+    reply_text_all = actions.get_my_subscriptions(update.effective_chat.id)
+    for msg in MessageSplitter(reply_text_all):
+        update.callback_query.answer()
+        update.callback_query.edit_message_text(text=msg, parse_mode=ParseMode.HTML)
     return Stage.stopping
 
 
@@ -173,8 +175,6 @@ def stop_nested(update: Update, _: CallbackContext) -> int:
 def process_user_input(update: Update, context: CallbackContext):
     action = context.user_data.pop(ACTION)
     reply_text_all = ACTION_MAPPING[action](update.message.text, update.effective_chat["id"])
-    for chunk_start in range(0, len(reply_text_all), MAX_MSG_LEN):
-        update.message.reply_text(
-            reply_text_all[chunk_start : chunk_start + MAX_MSG_LEN], parse_mode=ParseMode.MARKDOWN
-        )  # noqa: WPS237
+    for msg in MessageSplitter(reply_text_all):
+        update.message.reply_text(msg, parse_mode=ParseMode.HTML)
     return Stage.stopping

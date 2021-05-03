@@ -12,8 +12,8 @@ from cve_bot.formatters import (
 )
 from cve_bot.models import CVE, PackageCVE, Subscription
 
-NOT_FOUND = "*Not found*"
-DONE = "*Done*"
+NOT_FOUND = "<b>Not found</b>"
+DONE = "<b>Done</b>"
 
 
 def _get_package_info_for_cve(session, cve):

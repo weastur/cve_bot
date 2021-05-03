@@ -11,25 +11,65 @@ class MessageSplitter(object):
     def __iter__(self):
         return iter(self._splitted)
 
-    def _split(self):  # noqa: WPS210
-        current_chunk_idx = 0
-        while current_chunk_idx * self._chunk_size < len(self._msg):
-            current_chunk_start_pos = current_chunk_idx * self._chunk_size
-            current_chunk_end_pos = (current_chunk_idx + 1) * self._chunk_size
-            current_chunk = self._msg[current_chunk_start_pos:current_chunk_end_pos]
-            for tag_open, tag_close in TAGS:
-                tag_open_last_pos = current_chunk.rfind(tag_open)
-                tag_close_last_pos = current_chunk.rfind(tag_close)
-                if tag_open_last_pos > tag_close_last_pos:
-                    current_chunk = (
-                        self._msg[current_chunk_start_pos : current_chunk_end_pos - len(tag_close)] + tag_close
-                    )
-                    self._msg = "{prev}{tag_close}{tag_open}{last}".format(
-                        prev=self._msg[:current_chunk_end_pos],
-                        tag_close=tag_close,
-                        tag_open=tag_open,
-                        last=self._msg[current_chunk_end_pos:],
-                    )
-                    break
-            self._splitted.append(current_chunk)
-            current_chunk_idx += 1
+    def _split_tagged_text_0(self, chunk, pos_close, tag_close):
+        end_chunk_pos = pos_close + len(tag_close)
+        chunk += self._msg[:end_chunk_pos]
+        self._msg = self._msg[end_chunk_pos:]
+        if not self._msg:
+            self._splitted.append(chunk)
+        return chunk
+
+    def _split_tagged_text_1(self, chunk, tag_open, tag_close):
+        end_chunk_pos = self._chunk_size - len(chunk) - len(tag_close)
+        chunk += self._msg[:end_chunk_pos] + tag_close
+        self._msg = tag_open + self._msg[end_chunk_pos:]
+        self._splitted.append(chunk)
+        return ""
+
+    def _split_regular_text_0(self, chunk):
+        end_chunk_pos = self._chunk_size - len(chunk)
+        chunk += self._msg[:end_chunk_pos]
+        self._msg = self._msg[end_chunk_pos:]
+        self._splitted.append(chunk)
+        return ""
+
+    def _split_regular_text_1(self, chunk, pos_open):
+        chunk += self._msg[:pos_open]
+        self._msg = self._msg[pos_open:]
+        if not self._msg:
+            self._splitted.append(chunk)
+        return chunk
+
+    def _split(self):  # noqa: WPS231
+        chunk = ""
+        while self._msg:
+            pos_open, pos_close, tag_open, tag_close = self._find_lowest_pos()
+            if pos_open == 0:
+                if len(chunk) + pos_close + len(tag_close) <= self._chunk_size:
+                    chunk = self._split_tagged_text_0(chunk, pos_close, tag_close)
+                elif self._chunk_size - len(chunk) > len(tag_open) + len(tag_close):  # noqa: WPS221
+                    chunk = self._split_tagged_text_1(chunk, tag_open, tag_close)
+                else:
+                    self._splitted.append(chunk)
+                    chunk = ""
+            else:
+                if pos_open == -1:
+                    pos_open = len(self._msg)
+                if len(chunk) + pos_open > self._chunk_size:
+                    chunk = self._split_regular_text_0(chunk)
+                else:
+                    chunk = self._split_regular_text_1(chunk, pos_open)
+
+    def _find_lowest_pos(self):
+        lowest_pos_open = -1
+        lowest_pos_close = -1
+        lowest_tag_open = None
+        lowest_tag_close = None
+        for tag_open, tag_close in TAGS:
+            pos = self._msg.find(tag_open)
+            if pos != -1 and (lowest_pos_open == -1 or pos < lowest_pos_open):
+                lowest_pos_open = pos
+                lowest_pos_close = self._msg.find(tag_close)
+                lowest_tag_open = tag_open
+                lowest_tag_close = tag_close
+        return lowest_pos_open, lowest_pos_close, lowest_tag_open, lowest_tag_close

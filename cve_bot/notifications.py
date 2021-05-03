@@ -4,6 +4,7 @@ from telegram import ParseMode
 
 from cve_bot import db
 from cve_bot.formatters import format_cve, format_notification
+from cve_bot.messages import MessageSplitter
 from cve_bot.models import Notification
 
 
@@ -12,13 +13,15 @@ def send_notifications(context):
     with Session(db_engine) as session:
         stmt = select(Notification).join(Notification.subscription)
         for notification in session.execute(stmt).scalars().all():
-            context.bot.send_message(
-                chat_id=notification.subscription.chat_id, text=format_cve(notification.subscription.cve[0])
-            )
-            context.bot.send_message(
-                chat_id=notification.subscription.chat_id,
-                text=format_notification(notification),
-                parse_mode=ParseMode.HTML,
-            )
+            for cve_msg in MessageSplitter(format_cve(notification.subscription.cve[0])):
+                context.bot.send_message(
+                    chat_id=notification.subscription.chat_id, text=cve_msg, parse_mode=ParseMode.HTML
+                )
+            for notification_msg in MessageSplitter(format_notification(notification)):
+                context.bot.send_message(
+                    chat_id=notification.subscription.chat_id,
+                    text=notification_msg,
+                    parse_mode=ParseMode.HTML,
+                )
             session.delete(notification)
             session.commit()
