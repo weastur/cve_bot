@@ -4,8 +4,10 @@ import sys
 import pytest
 from alembic.command import upgrade as alembic_upgrade
 from alembic.config import Config as AlembicConfig
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, delete, text
 from sqlalchemy.orm import sessionmaker
+
+from cve_bot.models import Base
 
 
 def pytest_configure(config):
@@ -30,7 +32,6 @@ def db():
     alembic_config.set_main_option("script_location", os.path.join(pkg_root, "migrations"))
     alembic_upgrade(alembic_config, "head")
 
-    load_sql_fixture(pkg_root, session_factory)
     yield {
         "engine": engine,
         "session_factory": session_factory,
@@ -49,7 +50,12 @@ def load_sql_fixture(pkg_root, session_factory):
 
 @pytest.fixture(scope="function")
 def session(db):
+    pkg_root = os.path.dirname(os.path.realpath(__file__))
+    load_sql_fixture(pkg_root, db["session_factory"])
     session = db["session_factory"]()
     yield session
     session.rollback()
+    for table in Base.metadata.sorted_tables:
+        session.execute(delete(table))
+    session.commit()
     session.close()

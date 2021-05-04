@@ -124,4 +124,4 @@ class Notification(Base):
     information = Column(Text, nullable=False)
 
     def __repr__(self):
-        return f"Notification(id={self.id} chat_id={self.chat_id})"
+        return f"Notification(id={self.id} subscription_id={self.subscription_id} package_name={self.package_name})"

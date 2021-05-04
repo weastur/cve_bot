@@ -84,7 +84,7 @@ def _create_cve(db_engine, security_info):  # noqa: WPS210
 
 
 def _create_notifications(session, package_cve, changes):
-    for prop in changes:
+    for prop in changes:  # noqa: WPS503
         if changes[prop]["old"] != changes[prop]["new"]:
             break
     else:
