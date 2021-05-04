@@ -53,8 +53,7 @@ class PackageCVE(Base):
 
     def _set_and_track_changes(self, changes, attr, new_value):
         old_value = getattr(self, attr)
-        if old_value != new_value:
-            changes[attr] = {"old": old_value, "new": new_value}
+        changes[attr] = {"old": old_value, "new": new_value}
         setattr(self, attr, new_value)
 
 

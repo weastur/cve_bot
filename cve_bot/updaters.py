@@ -84,7 +84,10 @@ def _create_cve(db_engine, security_info):  # noqa: WPS210
 
 
 def _create_notifications(session, package_cve, changes):
-    if not changes:
+    for prop in changes:
+        if changes[prop]["old"] != changes[prop]["new"]:
+            break
+    else:
         return
     changes = json.dumps(changes)
     stmt = select(Subscription).join(Subscription.cve).where(CVE.name == package_cve.cve_name)  # noqa: WPS221
