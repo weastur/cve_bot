@@ -1,3 +1,4 @@
+import logging
 from functools import partial
 
 from sqlalchemy import select
@@ -12,6 +13,8 @@ from cve_bot.formatters import (
 )
 from cve_bot.models import CVE, PackageCVE, Subscription
 
+logger = logging.getLogger(__name__)
+
 NOT_FOUND = "<b>Not found</b>"
 DONE = "<b>Done</b>"
 
@@ -24,16 +27,19 @@ def _get_package_info_for_cve(session, cve):
 
 def get_package_info(user_input, chat_id):
     db_engine = db.get_engine()
+    logger.info("Get info for %s package", user_input)
     with Session(db_engine) as session:
         stmt = select(CVE).join(CVE.packages).where(PackageCVE.package_name == user_input)  # noqa: WPS221
         cve = session.execute(stmt).scalars().all()
         if cve:
             return "".join(map(partial(_get_package_info_for_cve, session), cve))
+        logger.info("Get info for %s package - NOT FOUND", user_input)
         return NOT_FOUND
 
 
 def get_cve_info(user_input, chat_id):
     db_engine = db.get_engine()
+    logger.info("Get info for %s CVE", user_input)
     with Session(db_engine) as session:
         stmt = select(CVE).where(CVE.name == f"CVE-{user_input}")  # noqa: WPS221
         cve = session.execute(stmt).scalars().first()
@@ -43,11 +49,13 @@ def get_cve_info(user_input, chat_id):
             return "{cve_info}\n{package_cve_info}".format(
                 cve_info=format_cve(cve), package_cve_info=format_package_cve_list(package_cve)
             )
+        logger.info("Get info for %s CVE - NOT FOUND", user_input)
         return NOT_FOUND
 
 
 def create_new_subscription(user_input, chat_id):
     db_engine = db.get_engine()
+    logger.info("Subscribe chat %d to CVE %s", chat_id, user_input)
     with Session(db_engine) as session:
         stmt = select(Subscription).where(Subscription.chat_id == chat_id)
         subscription = session.execute(stmt).scalars().first()
@@ -56,6 +64,7 @@ def create_new_subscription(user_input, chat_id):
         stmt = select(CVE).where(CVE.name == f"CVE-{user_input}")
         cve = session.execute(stmt).scalars().first()
         if not cve:
+            logger.info("Subscribe chat %d to CVE %s failed: CVE not found", chat_id, user_input)
             return NOT_FOUND
         subscription.cve.append(cve)
         session.add(subscription)
@@ -65,6 +74,7 @@ def create_new_subscription(user_input, chat_id):
 
 def remove_subscription(user_input, chat_id):
     db_engine = db.get_engine()
+    logger.info("Unsubscribe chat %d from CVE %s", chat_id, user_input)
     with Session(db_engine) as session:
         stmt = (
             select(Subscription)
@@ -76,14 +86,17 @@ def remove_subscription(user_input, chat_id):
             session.delete(subscription)
             session.commit()
             return DONE
+        logger.info("Unsubscribe chat %d from CVE %s failed: subscription not found", chat_id, user_input)
         return NOT_FOUND
 
 
 def get_my_subscriptions(chat_id):
     db_engine = db.get_engine()
+    logger.info("Get all subscriptions for chat %d", chat_id)
     with Session(db_engine) as session:
         stmt = select(CVE).join(CVE.subscriptions).where(Subscription.chat_id == chat_id)  # noqa: WPS221
         subscriptions = session.execute(stmt).scalars().all()
         if subscriptions:
             return format_my_subscriptions(subscriptions)
+        logger.info("Get all subscriptions for chat %d failed: not found", chat_id)
         return NOT_FOUND

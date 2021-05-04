@@ -1,12 +1,18 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 TAGS = (("<b>", "</b>"), ("<i>", "</i>"), ("<s>", "</s>"), ("<code>", "</code>"))  # noqa: WPS221
 
 
 class MessageSplitter(object):
     def __init__(self, message, chunk_size=4096):
+        logger.debug("Initial message = %s", message)
         self._msg = message
         self._chunk_size = chunk_size
         self._splitted = []
         self._split()
+        logger.debug("Splitted message = %s", self._splitted)
 
     def __iter__(self):
         return iter(self._splitted)

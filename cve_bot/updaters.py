@@ -61,6 +61,7 @@ def _create_packages(db_engine, security_info):
         db_packages = _get_all_db_packages(session)
         current_packages = set(security_info.keys())
         for package_name in list(current_packages - db_packages):
+            logger.info("Add %s package to DB", package_name)
             session.add(Package(name=package_name))
         session.commit()
 
@@ -75,6 +76,7 @@ def _create_cve(db_engine, security_info):  # noqa: WPS210
                 if current_cve is not None:
                     current_cve.set_values(**field_values)
                 else:
+                    logger.info("Add %s CVE to DB", cve_name)
                     db_cve[cve_name] = CVE(
                         name=cve_name,
                         **field_values,
@@ -92,7 +94,11 @@ def _create_notifications(session, package_cve, changes):
     changes = json.dumps(changes)
     stmt = select(Subscription).join(Subscription.cve).where(CVE.name == package_cve.cve_name)  # noqa: WPS221
     for subscription in session.execute(stmt).scalars().all():
-        session.add(Notification(subscription=subscription, information=changes, package_name=package_cve.package_name))
+        notification = Notification(
+            subscription=subscription, information=changes, package_name=package_cve.package_name
+        )
+        logger.info("Create notification: %s", notification)
+        session.add(notification)
 
 
 def _create_package_cve(db_engine, security_info):  # noqa: WPS210
@@ -106,6 +112,7 @@ def _create_package_cve(db_engine, security_info):  # noqa: WPS210
                 if current_package_cve is not None:
                     _create_notifications(session, current_package_cve, current_package_cve.set_values(**field_values))
                 else:
+                    logger.info("Add package(%s) <-> CVE(%s) relation", package_name, cve_name)
                     db_package_cve[current_pk] = PackageCVE(
                         cve_name=cve_name,
                         package_name=package_name,
@@ -124,4 +131,3 @@ def debian_update(_: CallbackContext):
     _create_packages(db_engine, packages)
     _create_cve(db_engine, packages)
     _create_package_cve(db_engine, packages)
-    logger.info("Done")
