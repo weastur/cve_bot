@@ -49,7 +49,10 @@ def get_cve_info(user_input, chat_id):
 def create_new_subscription(user_input, chat_id):
     db_engine = db.get_engine()
     with Session(db_engine) as session:
-        subscription = Subscription(chat_id=chat_id)
+        stmt = select(Subscription).where(Subscription.chat_id == chat_id)
+        subscription = session.execute(stmt).scalars().first()
+        if not subscription:
+            subscription = Subscription(chat_id=chat_id)
         stmt = select(CVE).where(CVE.name == f"CVE-{user_input}")
         cve = session.execute(stmt).scalars().first()
         if not cve:
