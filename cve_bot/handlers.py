@@ -2,7 +2,6 @@ import enum
 import logging
 import types
 
-import actions
 from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -11,6 +10,7 @@ from telegram import (
 )
 from telegram.ext import CallbackContext, ConversationHandler
 
+from cve_bot import actions
 from cve_bot.messages import MessageSplitter
 
 START_OVER = "START_OVER"

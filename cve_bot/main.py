@@ -1,6 +1,7 @@
 import logging.config  # noqa: WPS301 WPS458
 
 import sentry_sdk
+from sentry_sdk.integrations.logging import LoggingIntegration
 from telegram.ext import (
     CallbackQueryHandler,
     CommandHandler,
@@ -63,7 +64,8 @@ if config["logzio_token"] is not None:
 logging.config.dictConfig(logging_config)
 
 if config["sentry_url"]:
-    sentry_sdk.init(config["sentry_url"], traces_sample_rate=1.0)
+    sentry_logging = LoggingIntegration(level=logging.INFO, event_level=logging.WARNING)
+    sentry_sdk.init(config["sentry_url"], traces_sample_rate=1.0, integrations=[sentry_logging])
 
 logger = logging.getLogger(__name__)
 

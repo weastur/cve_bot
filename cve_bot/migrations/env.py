@@ -12,7 +12,7 @@ app_config = get_config()
 fileConfig(config.config_file_name)
 target_metadata = [Base.metadata]
 
-if not sys._called_from_test:  # noqa: WPS437
+if not getattr(sys, "_called_from_test", False):  # noqa: WPS437
     db_url = f"sqlite:///{app_config['db_path']}"
     config.set_main_option("sqlalchemy.url", db_url)
 
