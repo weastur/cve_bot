@@ -8,6 +8,7 @@ from telegram.ext import CallbackContext
 
 from cve_bot import db
 from cve_bot.models import CVE, Notification, Package, PackageCVE, Subscription
+from cve_bot.perf import track
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +57,7 @@ def _extract_package_cve_filed_values(security_info, package_name, cve_name):
     }
 
 
+@track(10)
 def _create_packages(db_engine, security_info):
     with Session(db_engine) as session:
         db_packages = _get_all_db_packages(session)
@@ -66,6 +68,7 @@ def _create_packages(db_engine, security_info):
         session.commit()
 
 
+@track(10)
 def _create_cve(db_engine, security_info):  # noqa: WPS210
     with Session(db_engine) as session:
         db_cve = _get_all_db_cve(session)
@@ -101,6 +104,7 @@ def _create_notifications(session, package_cve, changes):
         session.add(notification)
 
 
+@track(10)
 def _create_package_cve(db_engine, security_info):  # noqa: WPS210
     with Session(db_engine) as session:
         db_package_cve = _get_all_db_package_cve(session)

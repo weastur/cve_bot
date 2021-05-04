@@ -12,6 +12,7 @@ from cve_bot.formatters import (
     format_package_cve_list,
 )
 from cve_bot.models import CVE, PackageCVE, Subscription
+from cve_bot.perf import track
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,7 @@ def get_package_info(user_input, chat_id):
         return NOT_FOUND
 
 
+@track()
 def get_cve_info(user_input, chat_id):
     db_engine = db.get_engine()
     logger.info("Get info for %s CVE", user_input)
@@ -53,6 +55,7 @@ def get_cve_info(user_input, chat_id):
         return NOT_FOUND
 
 
+@track()
 def create_new_subscription(user_input, chat_id):
     db_engine = db.get_engine()
     logger.info("Subscribe chat %d to CVE %s", chat_id, user_input)
@@ -72,6 +75,7 @@ def create_new_subscription(user_input, chat_id):
         return DONE
 
 
+@track()
 def remove_subscription(user_input, chat_id):
     db_engine = db.get_engine()
     logger.info("Unsubscribe chat %d from CVE %s", chat_id, user_input)
@@ -90,6 +94,7 @@ def remove_subscription(user_input, chat_id):
         return NOT_FOUND
 
 
+@track()
 def get_my_subscriptions(chat_id):
     db_engine = db.get_engine()
     logger.info("Get all subscriptions for chat %d", chat_id)

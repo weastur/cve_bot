@@ -8,10 +8,12 @@ from cve_bot import db
 from cve_bot.formatters import format_cve, format_notification
 from cve_bot.messages import MessageSplitter
 from cve_bot.models import Notification
+from cve_bot.perf import track
 
 logger = logging.getLogger(__name__)
 
 
+@track(10)
 def send_notifications(context):
     db_engine = db.get_engine()
     with Session(db_engine) as session:
