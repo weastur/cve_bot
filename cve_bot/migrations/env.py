@@ -1,3 +1,4 @@
+import sys
 from logging.config import fileConfig
 
 from alembic import context
@@ -11,8 +12,9 @@ app_config = get_config()
 fileConfig(config.config_file_name)
 target_metadata = [Base.metadata]
 
-db_url = f"sqlite:///{app_config['db_path']}"
-config.set_main_option("sqlalchemy.url", db_url)
+if not sys._called_from_test:  # noqa: WPS437
+    db_url = f"sqlite:///{app_config['db_path']}"
+    config.set_main_option("sqlalchemy.url", db_url)
 
 
 def run_migrations_offline():
