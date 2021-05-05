@@ -134,9 +134,9 @@ def info_by_package(update: Update, context: CallbackContext) -> int:
 
 def subscriptions_my(update: Update, ctx: CallbackContext) -> int:
     reply_text_all = actions.get_my_subscriptions(update.effective_chat.id)
+    update.callback_query.answer()
     for msg in MessageSplitter(reply_text_all):
-        update.callback_query.answer()
-        update.callback_query.edit_message_text(text=msg, parse_mode=ParseMode.HTML)
+        update.effective_chat.send_message(text=msg, parse_mode=ParseMode.HTML)
     return Stage.stopping
 
 
