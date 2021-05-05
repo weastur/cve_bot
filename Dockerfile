@@ -7,6 +7,7 @@ RUN apk add --no-cache \
         gcc \
         g++ \
         musl-dev \
+    && pip3 install cve-bot==${VERSION} || true \
     && pip3 install cve-bot==${VERSION} \
     && mkdir /cve_bot
 
