@@ -109,7 +109,9 @@ def _create_package_cve(db_engine, security_info):  # noqa: WPS210
     with Session(db_engine) as session:
         db_package_cve = _get_all_db_package_cve(session)
         for package_name in security_info:
+            logger.debug("Process %s package", package_name)
             for cve_name in security_info[package_name]:
+                logger.debug("Process %s for %s", cve_name, package_name)
                 field_values = _extract_package_cve_filed_values(security_info, package_name, cve_name)
                 current_pk = PackageCVE.get_pk(package_name, cve_name)
                 current_package_cve = db_package_cve.get(current_pk)
