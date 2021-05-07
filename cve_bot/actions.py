@@ -2,6 +2,7 @@ import logging
 from functools import partial
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from cve_bot import db
@@ -60,18 +61,18 @@ def create_new_subscription(user_input, chat_id):
     db_engine = db.get_engine()
     logger.info("Subscribe chat %d to CVE %s", chat_id, user_input)
     with Session(db_engine) as session:
-        stmt = select(Subscription).where(Subscription.chat_id == chat_id)
+        stmt = select(Subscription).where(
+            Subscription.chat_id == chat_id, Subscription.cve_name == f"CVE-{user_input}"
+        )  # noqa: WPS221
         subscription = session.execute(stmt).scalars().first()
-        if not subscription:
-            subscription = Subscription(chat_id=chat_id)
-        stmt = select(CVE).where(CVE.name == f"CVE-{user_input}")
-        cve = session.execute(stmt).scalars().first()
-        if not cve:
-            logger.info("Subscribe chat %d to CVE %s failed: CVE not found", chat_id, user_input)
-            return NOT_FOUND
-        subscription.cve.append(cve)
+        if subscription:
+            return DONE
+        subscription = Subscription(chat_id=chat_id, cve_name=f"CVE-{user_input}")
         session.add(subscription)
-        session.commit()
+        try:
+            session.commit()
+        except IntegrityError:
+            return NOT_FOUND
         return DONE
 
 
@@ -80,11 +81,9 @@ def remove_subscription(user_input, chat_id):
     db_engine = db.get_engine()
     logger.info("Unsubscribe chat %d from CVE %s", chat_id, user_input)
     with Session(db_engine) as session:
-        stmt = (
-            select(Subscription)
-            .join(Subscription.cve)
-            .where(CVE.name == f"CVE-{user_input}", Subscription.chat_id == chat_id)
-        )
+        stmt = select(Subscription).where(
+            Subscription.cve_name == f"CVE-{user_input}", Subscription.chat_id == chat_id
+        )  # noqa: WPS221
         subscription = session.execute(stmt).scalars().first()
         if subscription:
             session.delete(subscription)
@@ -99,7 +98,7 @@ def get_my_subscriptions(chat_id):
     db_engine = db.get_engine()
     logger.info("Get all subscriptions for chat %d", chat_id)
     with Session(db_engine) as session:
-        stmt = select(CVE).join(CVE.subscriptions).where(Subscription.chat_id == chat_id)  # noqa: WPS221
+        stmt = select(Subscription).where(Subscription.chat_id == chat_id)
         subscriptions = session.execute(stmt).scalars().all()
         if subscriptions:
             return format_my_subscriptions(subscriptions)

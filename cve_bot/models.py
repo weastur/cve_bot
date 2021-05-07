@@ -1,4 +1,11 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Table, Text
+from sqlalchemy import (
+    Column,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
@@ -7,8 +14,9 @@ Base = declarative_base()
 class PackageCVE(Base):
     __tablename__ = "package_cve"
 
-    package_name = Column(String, ForeignKey("packages.name", ondelete="cascade"), nullable=False, primary_key=True)
-    cve_name = Column(String, ForeignKey("cve.name", ondelete="cascade"), nullable=False, primary_key=True)
+    id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    package_name = Column(String, ForeignKey("packages.name", ondelete="cascade"), nullable=False)
+    cve_name = Column(String, ForeignKey("cve.name", ondelete="cascade"), nullable=False)
     sid_status = Column(String(32), nullable=False, default="")
     sid_urgency = Column(String(64), nullable=False, default="")
     sid_fixed_version = Column(String(64), nullable=False, default="")
@@ -23,6 +31,7 @@ class PackageCVE(Base):
     stretch_fixed_version = Column(String(64), nullable=False, default="")
     package = relationship("Package", back_populates="cve")
     cve = relationship("CVE", back_populates="packages")
+    __table_args__ = (UniqueConstraint("package_name", "cve_name", name="_package_cve_unique"),)
 
     def set_values(self, **kwargs):
         changes = {}
@@ -67,14 +76,6 @@ class Package(Base):
         return f"Package(name={self.name!r})"
 
 
-subscription_cve = Table(
-    "subscription_cve",
-    Base.metadata,
-    Column("cve_name", Integer, ForeignKey("cve.name"), primary_key=True, nullable=False),
-    Column("subscription_id", Integer, ForeignKey("subscriptions.id"), primary_key=True, nullable=False),
-)
-
-
 class CVE(Base):
     __tablename__ = "cve"
 
@@ -85,7 +86,6 @@ class CVE(Base):
     packages = relationship("PackageCVE", back_populates="cve")
     subscriptions = relationship(
         "Subscription",
-        secondary=subscription_cve,
         back_populates="cve",
     )
 
@@ -102,12 +102,10 @@ class Subscription(Base):
     __tablename__ = "subscriptions"
 
     id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    cve_name = Column(String, ForeignKey("cve.name", ondelete="cascade"), nullable=False)
     chat_id = Column(Integer, nullable=False)
-    cve = relationship(
-        "CVE",
-        secondary=subscription_cve,
-        back_populates="subscriptions",
-    )
+    cve = relationship("CVE", back_populates="subscriptions")
+    __table_args__ = (UniqueConstraint("cve_name", "chat_id", name="_cve_chat_constraint"),)
 
     def __repr__(self):
         return f"Subscription(id={self.id} chat_id={self.chat_id})"
@@ -117,9 +115,9 @@ class Notification(Base):
     __tablename__ = "notifications"
 
     id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
-    subscription_id = Column(Integer, ForeignKey("subscriptions.id"))
+    subscription_id = Column(Integer, ForeignKey("subscriptions.id", ondelete="cascade"))
     subscription = relationship("Subscription")
-    package_name = Column(String, ForeignKey("packages.name"))
+    package_name = Column(String, ForeignKey("packages.name", ondelete="cascade"))
     package = relationship("Package")
     information = Column(Text, nullable=False)
 

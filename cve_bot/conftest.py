@@ -4,7 +4,8 @@ import sys
 import pytest
 from alembic.command import upgrade as alembic_upgrade
 from alembic.config import Config as AlembicConfig
-from sqlalchemy import create_engine, delete, text
+from sqlalchemy import create_engine, delete, event, text
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker
 
 from cve_bot.models import Base
@@ -16,6 +17,13 @@ def pytest_configure(config):
 
 def pytest_unconfigure(config):
     del sys._called_from_test  # noqa: WPS437 WPS420
+
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
 
 
 @pytest.fixture(scope="session")

@@ -72,8 +72,10 @@ def format_notification(notification):
 """
 
 
-def format_my_subscriptions(result_cve):
+def format_my_subscriptions(subscriptions):
     reply_text = ""
-    for cve in result_cve:
-        reply_text = "{reply_text}\n{formatted_cve}\n".format(reply_text=reply_text, formatted_cve=format_cve(cve))
+    for subscription in subscriptions:
+        reply_text = "{reply_text}\n{formatted_cve}\n".format(
+            reply_text=reply_text, formatted_cve=format_cve(subscription.cve)
+        )
     return reply_text

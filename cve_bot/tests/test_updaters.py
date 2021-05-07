@@ -37,6 +37,7 @@ def test_create_package_cve(db, session):
             "CVE-2021-0003": {"description": "description", "scope": "scope", "releases": {}},
         }
     }
+    _create_cve(db["engine"], feed)
     _create_package_cve(db["engine"], feed)
     stmt = select(PackageCVE.cve_name).where(PackageCVE.package_name == "package0")
     cve_names = session.execute(stmt).scalars().all()
@@ -64,4 +65,4 @@ def test_create_notifications(session):
 
     stmt = select(Notification.subscription_id).where(Notification.package_name == "package0")
     subscriptions = session.execute(stmt).scalars().all()
-    assert sorted(subscriptions) == [1, 2, 3, 3]
+    assert sorted(subscriptions) == [1, 3]

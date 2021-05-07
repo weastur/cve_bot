@@ -11,7 +11,7 @@ from cve_bot.actions import (
     get_package_info,
     remove_subscription,
 )
-from cve_bot.models import Subscription, subscription_cve
+from cve_bot.models import Subscription
 
 
 def test_get_my_subscirptions(db, session):
@@ -45,6 +45,4 @@ def test_create_new_subscirption(db, session):
         assert create_new_subscription("1234-0000", 1) == NOT_FOUND
         assert create_new_subscription("2021-0003", 2) == DONE
         stmt = select(func.count("*")).select_from(Subscription)
-        assert session.execute(stmt).scalars().one() == 3
-        stmt = select(func.count("*")).select_from(subscription_cve)
-        assert session.execute(stmt).scalars().one() == 7
+        assert session.execute(stmt).scalars().one() == 4

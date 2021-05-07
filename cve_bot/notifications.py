@@ -20,7 +20,7 @@ def send_notifications(context):
         stmt = select(Notification).join(Notification.subscription)
         for notification in session.execute(stmt).scalars().all():
             logger.info("Send notification to chat: %d", notification.subscription.chat_id)
-            for cve_msg in MessageSplitter(format_cve(notification.subscription.cve[0])):
+            for cve_msg in MessageSplitter(format_cve(notification.subscription.cve)):
                 context.bot.send_message(
                     chat_id=notification.subscription.chat_id, text=cve_msg, parse_mode=ParseMode.HTML
                 )

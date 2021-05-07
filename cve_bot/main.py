@@ -75,10 +75,13 @@ def main() -> None:
     dispatcher = updater.dispatcher
 
     logger.info("Run DB update every %d sec", config["update_interval"])
-    updater.job_queue.run_repeating(debian_update, interval=config["update_interval"])
+    updater.job_queue.run_repeating(debian_update, interval=config["update_interval"], job_kwargs={"max_instances": 1})
     logger.info("Run notificator every %d sec", config["update_interval"])
     updater.job_queue.run_repeating(
-        send_notifications, first=config["notifications_offset"], interval=config["update_interval"]
+        send_notifications,
+        first=config["notifications_offset"],
+        interval=config["update_interval"],
+        job_kwargs={"max_instances": 1},
     )
 
     subscriptions_conv_handler = ConversationHandler(
