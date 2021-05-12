@@ -10,5 +10,5 @@ wemake-python-styleguide==0.15.2
 dikort==0.2.1
 pytest==6.2.4
 pytest-cov==2.11.1
-ansible==3.3.0
+ansible==3.4.0
 
