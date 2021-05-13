@@ -31,7 +31,7 @@ def get_package_info(user_input, chat_id):
     db_engine = db.get_engine()
     logger.info("Get info for %s package", user_input)
     with Session(db_engine) as session:
-        stmt = select(CVE).join(CVE.packages).where(PackageCVE.package_name == user_input)  # noqa: WPS221
+        stmt = select(CVE).join(CVE.packages).where(PackageCVE.package_name == user_input.lower())  # noqa: WPS221
         cve = session.execute(stmt).scalars().all()
         if cve:
             return "".join(map(partial(_get_package_info_for_cve, session), cve))
