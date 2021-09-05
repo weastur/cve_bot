@@ -8,7 +8,7 @@ codecov==2.1.12
 isort==5.9.3
 wemake-python-styleguide==0.15.3
 dikort==0.2.1
-pytest==6.2.4
+pytest==6.2.5
 pytest-cov==2.12.1
 ansible==4.5.0
 
