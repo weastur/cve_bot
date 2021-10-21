@@ -1,7 +1,6 @@
 # CVE Bot: Telegram bot that notifies about package update linked with CVE
 
-[![Build Status](https://travis-ci.com/weastur/cve_bot.svg?branch=main)](https://travis-ci.com/weastur/cve_bot)
-[![codecov](https://codecov.io/gh/weastur/cve_bot/branch/main/graph/badge.svg)](https://codecov.io/gh/weastur/cve_bot)
+[![Lint and Test](https://github.com/weastur/cve_bot/actions/workflows/lint_and_test.yaml/badge.svg)](https://github.com/weastur/cve_bot/actions/workflows/lint_and_test.yaml)[![codecov](https://codecov.io/gh/weastur/cve_bot/branch/main/graph/badge.svg)](https://codecov.io/gh/weastur/cve_bot)
 [![PyPi version](https://img.shields.io/pypi/v/cve_bot.svg)](https://pypi.org/project/cve_bot/)
 [![Python versions](https://img.shields.io/pypi/pyversions/cve_bot)](https://pypi.org/project/cve_bot/)
 [![black-formatter](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -12,13 +11,14 @@
 
 ## Key Features
 
-* Frequent DB update 
-* Get actual info based on CVE number or Package name
-* Subscribe to update at any number of CVEs
+- Frequent DB update
+- Get actual info based on CVE number or Package name
+- Subscribe to update at any number of CVEs
 
 ## Technical Requirements/Installation
 
 ### Pre-requirements
+
 Install Python 3.9, and pip package management tool.
 
 ## Development Status
@@ -38,7 +38,7 @@ pip install setuptools wheel
 pip install -e '.[dev]'
 ```
 
-After that you'll have cve_bot and all development tools installed into virtualenv. Refer to [config](./cve_bot/config.py) 
+After that you'll have cve_bot and all development tools installed into virtualenv. Refer to [config](./cve_bot/config.py)
 to set proper env vars for development. Actually the minimum required is `CVE_BOT_TOKEN` with your token
 Hack, then make PR. Don't forget to write unit tests, and check your code:
 
