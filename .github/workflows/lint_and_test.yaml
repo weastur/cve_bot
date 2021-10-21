@@ -1,8 +1,8 @@
 ---
 name: Lint and Test
-on: [push, pull_request]
+on: [push]
 jobs:
-  build:
+  all:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -14,9 +14,6 @@ jobs:
         with:
           path: ~/.cache/pip
           key: ${{ hashFiles('setup.py') }}-${{ hashFiles('requirements.txt') }}-${{ hashFiles('requirements.dev.txt') }}
-      - name: Check commits with dikort
-        if: ${{ env.GITHUB_EVENT_NAME == 'pull_request' }}
-        run: dikort "$GITHUB_BASE_REF".."$GITHUB_HEAD_REF"
       - name: Install dependencies
         run: pip install '.[dev]'
       - name: Lint with black
