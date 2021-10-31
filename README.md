@@ -1,6 +1,8 @@
 # CVE Bot: Telegram bot that notifies about package update linked with CVE
 
-[![Lint and Test](https://github.com/weastur/cve_bot/actions/workflows/lint_and_test.yaml/badge.svg)](https://github.com/weastur/cve_bot/actions/workflows/lint_and_test.yaml)[![codecov](https://codecov.io/gh/weastur/cve_bot/branch/main/graph/badge.svg)](https://codecov.io/gh/weastur/cve_bot)
+[![Lint and Test](https://github.com/weastur/cve_bot/actions/workflows/lint_and_test.yaml/badge.svg)](https://github.com/weastur/cve_bot/actions/workflows/lint_and_test.yaml)
+[![dikort](https://github.com/weastur/cve_bot/actions/workflows/dikort.yaml/badge.svg)](https://github.com/weastur/cve_bot/actions/workflows/dikort.yaml)
+[![codecov](https://codecov.io/gh/weastur/cve_bot/branch/main/graph/badge.svg)](https://codecov.io/gh/weastur/cve_bot)
 [![PyPi version](https://img.shields.io/pypi/v/cve_bot.svg)](https://pypi.org/project/cve_bot/)
 [![Python versions](https://img.shields.io/pypi/pyversions/cve_bot)](https://pypi.org/project/cve_bot/)
 [![black-formatter](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
