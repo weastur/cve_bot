@@ -5,7 +5,7 @@ twine==3.5.0
 black==21.10b0
 coverage==6.1.1
 codecov==2.1.12
-isort==5.10.0
+isort==5.10.1
 wemake-python-styleguide==0.15.3
 dikort==0.2.1
 pytest==6.2.5
