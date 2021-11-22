@@ -1,6 +1,6 @@
 python-telegram-bot==13.7
 logzio-python-handler==3.0.0
-sentry_sdk==1.4.3
+sentry_sdk==1.5.0
 alembic==1.7.5
 SQLAlchemy==1.4.26
 requests==2.26.0
