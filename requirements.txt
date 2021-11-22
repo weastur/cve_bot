@@ -1,4 +1,4 @@
-python-telegram-bot==13.7
+python-telegram-bot==13.8.1
 logzio-python-handler==3.0.0
 sentry_sdk==1.4.3
 alembic==1.7.5
