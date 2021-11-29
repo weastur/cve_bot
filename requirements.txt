@@ -4,4 +4,4 @@ sentry_sdk==1.5.0
 alembic==1.7.5
 SQLAlchemy==1.4.27
 requests==2.26.0
-ujson==4.2.0
+ujson==4.3.0
