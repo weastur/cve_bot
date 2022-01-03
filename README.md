@@ -21,7 +21,7 @@
 
 ### Pre-requirements
 
-Install Python 3.9, and pip package management tool.
+Install Python 3.10, and pip package management tool.
 
 ## Development Status
 
